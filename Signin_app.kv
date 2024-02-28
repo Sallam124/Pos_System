@@ -1,0 +1,41 @@
+<Signin_Window>:
+    id:main
+    orientation: "vertical"
+    spacing: 10
+    space_x:self.size[0]/3
+    BoxLayout:
+        size_hint_y: None
+        height: 50
+        Label:
+            bold : True
+            text: "System Control"
+            size_hint_x: .9
+        Button:
+            text: "x"
+            size_hint_x: .1
+    BoxLayout:
+        orientation: 'vertical'
+        padding: main.space_x , 10
+        #spacing: 20
+        BoxLayout:
+            orientation:"vertical"
+            size_hint_y: None
+            height: 80
+            TextInput:
+                hint_text :"Username"
+                multiline: False
+            TextInput:
+                hint_text :"Password"
+                multiline: False
+        Label:
+            id: sp
+            size_hint_y: None
+            height: 40
+
+        Button:
+            text: "Sign in"
+            size_hint_y: None
+            height: 40
+        
+        Label:
+            id: sp2
