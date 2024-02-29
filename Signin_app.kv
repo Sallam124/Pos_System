@@ -1,16 +1,31 @@
+<FlatButton@ButtonBehavior+Label>:
+    font_size: 18
+
 <Signin_Window>:
     id:main
     orientation: "vertical"
     spacing: 10
     space_x:self.size[0]/3
+    canvas.before:
+        Color:
+            rgba: (1,1,1,1)
+        Rectangle:
+            size: self.size
+            pos: self.pos
     BoxLayout:
         size_hint_y: None
         height: 50
+        canvas.before:
+            Color:
+                rgba: (.04,.45,.35,1)
+            Rectangle:
+                size: self.size
+                pos: self.pos
         Label:
             bold : True
             text: "System Control"
             size_hint_x: .9
-        Button:
+        FlatButton:
             text: "x"
             size_hint_x: .1
     BoxLayout:
@@ -19,15 +34,28 @@
         #spacing: 20
         BoxLayout:
             orientation:"vertical"
+            spacing: 10
             size_hint_y: None
-            height: 80
+            height: 120
+            Label:
+                id: info
+                text: ''
+                markup: True
+                size_hint_y: None
+                height: 20
             TextInput:
+                id: username_field
                 hint_text :"Username"
                 multiline: False
+                focus: True
+                on_text_validate: pwd_field.focus = True
             TextInput:
+                id: pwd_field
                 hint_text :"Password"
                 multiline: False
-        Label:
+                password: True
+                on_text_validate: root.validate()
+        Label:  
             id: sp
             size_hint_y: None
             height: 40
@@ -36,6 +64,8 @@
             text: "Sign in"
             size_hint_y: None
             height: 40
-        
+            background_color: (.4,.45,.45,1)
+            background_normal:''
+            on_release: root.validate()
         Label:
             id: sp2
