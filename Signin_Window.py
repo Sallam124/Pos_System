@@ -6,7 +6,6 @@ Logger.error("Error message")
 
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-import string
 
 class Signin_Window(BoxLayout):
     def __init__(self, **kwargs):
