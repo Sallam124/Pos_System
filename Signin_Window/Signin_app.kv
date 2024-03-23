@@ -1,0 +1,74 @@
+#:import hex kivy.utils.get_color_from_hex
+<FlatButton@ButtonBehavior+Label>:#FlatButton inherits from buttonbehavior and label
+    font_size: 18
+
+<Signin_Window>: #Background 
+    id:main # name 
+    orientation: "vertical"
+    spacing: 10
+    space_x:self.size [0]/3
+    canvas.before:
+        Color:
+            rgba: (1,1,1,1)
+        Rectangle: 
+            size: self.size
+            pos: self.pos
+
+    BoxLayout: #Title box
+        size_hint_y: None
+        height: 50
+        canvas.before:
+            Color:
+                rgba : hex ('#3384cc')
+            Rectangle:
+                size: self.size
+                pos: self.pos
+        Label: #Title box
+            bold : True
+            text: "System Control"
+            size_hint_x: 10
+        FlatButton: # Escape button
+            text: "x"
+            size_hint_x: 0.2
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: main.space_x , 10
+        spacing: 0
+        BoxLayout: # size of the box
+            orientation:"vertical"
+            spacing: 10
+            size_hint_y: None
+            height: 120
+            Label:
+                id: info
+                text: ''
+                markup: True
+                size_hint_y: None
+                height: 15
+            TextInput: #Username Inputbox
+                id: username_field
+                hint_text :"Username" # Text inside the box
+                multiline: False    # Makes the input only 1 line
+                focus: True # sets the focus on the widget making it recieve the keyboard input without the need of clicking on it
+                on_text_validate: pwd_field.focus = True # Checks the input with the already set password found in the python file 
+            TextInput: 
+                id: pwd_field
+                hint_text :"Password"   
+                multiline: False
+                password: True  # Turns the letters into astricts 
+                on_text_validate: root.validate()
+        Label: # Space inbetween the widget and sign in button
+            id: sp
+            size_hint_y: None
+            height:20 
+
+        Button: # sign in button
+            text: "Sign in"
+            size_hint_y: None
+            height: 40
+            background_color: (.4,.45,.45,1)
+            background_normal:''
+            on_release: root.validate()
+        Label:
+            id: sp2
