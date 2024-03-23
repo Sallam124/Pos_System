@@ -1,0 +1,109 @@
+<FlatButton@ButtonBehavior+Label>: #FlatButton inherits from buttonbehavior and label
+    font_size: 14
+
+<Operation_Window>: 
+    id: main_win
+    orientation: 'vertical'
+    canvas.before:
+        Color:
+            rgba:(1,1,1,1)
+        Rectangle:
+            size:self.size
+            pos: self.pos
+
+    BoxLayout:
+        id: header
+        size_hint_y: None 
+        height: 40
+        canvas.before:
+            Color:
+                rgba:(.06,.45,.45,1)
+            Rectangle:
+                size:self.size
+                pos: self.pos
+        height : 50
+
+        Label:
+            text:'POS System'
+            size_hint_x: .9
+            bold: True 
+            color: (1,1,1,1)
+
+        Label: 
+            id: loggedin_user
+            text: 'admin'
+            size_hint_y: .9
+            bold: True 
+            color: (1,1,1,1)
+
+    BoxLayout:
+        id : current 
+        orientation: 'horizontal'
+
+        canvas.before:
+            Color:
+                rgba:(.06,.45,.45,1)
+            Rectangle:
+                size:self.size
+                pos: self.pos
+
+        Button:
+            text:'Current Item'
+            background_normal: ''
+            background_color: (.06,.3,.32,1)
+            size_hint_x: .4
+
+        Button: 
+            id: product
+            text: 'Default Product'
+            background_normal: ''
+            background_color: (.06,.4,.4,1)
+
+        Button:
+            id: cur_price
+            text: '0.00'
+            background_normal: ''
+            background_color: (.06,.65,.65,1)
+            size_hint_x : .2
+
+    BoxLayout:
+        BoxLayout:
+            id : Product_details 
+            orientation:'vertical'
+            size_hint_x: .8
+
+            BoxLayout:
+                id: product_labels
+                canvas.before:
+                    Color:
+                        rgba: (.6,.45,.45,1)
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+
+                FlatButton:
+                    text: 'Qty'
+                    size_hint_x : .1
+
+                FlatButton:
+                    text: 'Product Code'
+                    size_hint_x : .3
+                FlatButton:
+                    text: 'Disc%'
+                    size_hint_x : .1
+                FlatButton:
+                    text: 'Vat'
+                    size_hint_x : .1
+                FlatButton:
+                    text: 'Price'
+                    size_hint_x : .1
+                FlatButton:
+                    text: 'Total'
+                    size_hint_x : .1
+            BoxLayout:
+                id: Preview
+                orientation: 'vertical'
+                size_hint_x: .2
+
+                BoxLayout:
+                    orientation:'vertical'
