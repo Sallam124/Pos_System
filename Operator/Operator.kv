@@ -113,24 +113,32 @@
                 TextInput:
                     id: quantity 
                     size_hint_x : .1
+                    multiline: False
+                    
                 TextInput:
-                    id: productcode
+                    id:productcode
                     size_hint_x : .3
+                    multiline: False
+                    on_text_validate: root.update_purchase()
                 TextInput:
                     id: discount
                     size_hint_x : .1
+                    multiline: False
                 TextInput:
                     id: vat
                     size_hint_x : .1
+                    multiline: False
                 TextInput:
                     id: price
                     size_hint_x : .1
+                    multiline: False
                 TextInput:
                     id: total
                     size_hint_x : .2
+                    multiline: False
 
             BoxLayout: 
-                id: add_item_to_cart
+                id:add_item_to_cart
                 orientation:'vertical'
                 BoxLayout:
                     size_hint_y: None
@@ -160,10 +168,10 @@
                     Label:
                         text:'Total'
                         size_hint_x: .1
-
-                BoxLayout:
-                    id : proudcts 
-
+                
+                GridLayout:
+                    id :products 
+                    cols: 1
             BoxLayout:
                 id: Preview
                 orientation: 'vertical'
