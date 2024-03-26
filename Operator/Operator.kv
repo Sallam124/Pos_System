@@ -1,3 +1,4 @@
+#:import hex kivy.utils.get_color_from_hex
 <FlatButton@ButtonBehavior+Label>: #FlatButton inherits from buttonbehavior and label
     font_size: 14
 
@@ -36,10 +37,11 @@
             bold: True 
             color: (1,1,1,1)
 
-    BoxLayout:
+    BoxLayout: #status bar
         id : current 
         orientation: 'horizontal'
-
+        size_hint_y: None
+        height: 50
         canvas.before:
             Color:
                 rgba:(.06,.45,.45,1)
@@ -66,17 +68,20 @@
             background_color: (.06,.65,.65,1)
             size_hint_x : .2
 
-    BoxLayout:
+    BoxLayout: # product details bar
+        padding : 10
         BoxLayout:
             id : Product_details 
             orientation:'vertical'
             size_hint_x: .8
-
+            spacing : 20
             BoxLayout:
                 id: product_labels
+                size_hint_y : None 
+                height : 50 
                 canvas.before:
                     Color:
-                        rgba: (.6,.45,.45,1)
+                        rgba: (.2,.55,.55,1)
                     Rectangle:
                         size: self.size
                         pos: self.pos
@@ -99,7 +104,66 @@
                     size_hint_x : .1
                 FlatButton:
                     text: 'Total'
+                    size_hint_x : .2
+            
+            BoxLayout: # data input 
+                id: product_inputs
+                size_hint_y: None
+                height : 45
+                TextInput:
+                    id: quantity 
                     size_hint_x : .1
+                TextInput:
+                    id: productcode
+                    size_hint_x : .3
+                TextInput:
+                    id: discount
+                    size_hint_x : .1
+                TextInput:
+                    id: vat
+                    size_hint_x : .1
+                TextInput:
+                    id: price
+                    size_hint_x : .1
+                TextInput:
+                    id: total
+                    size_hint_x : .2
+
+            BoxLayout: 
+                id: add_item_to_cart
+                orientation:'vertical'
+                BoxLayout:
+                    size_hint_y: None
+                    height : 30
+                    spacing : 5
+                    canvas.before: 
+                        Color: 
+                            rgba: (.06,.45,.45,1)
+                        Rectangle:
+                            pos: self.pos
+                            size : self.size
+                    Label:
+                        text:'Code'
+                        size_hint_x:  .1
+                    Label:
+                        text:'Product Name'
+                        size_hint_x: .3
+                    Label:
+                        text:'Quantity'
+                        size_hint_x: .1
+                    Label:
+                        text:'Disc'
+                        size_hint_x: .1
+                    Label:
+                        text:'Price'
+                        size_hint_x: .1
+                    Label:
+                        text:'Total'
+                        size_hint_x: .1
+
+                BoxLayout:
+                    id : proudcts 
+
             BoxLayout:
                 id: Preview
                 orientation: 'vertical'
