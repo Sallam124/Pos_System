@@ -110,6 +110,7 @@
                 id: product_inputs
                 size_hint_y: None
                 height : 45
+                spacing : 5
                 TextInput:
                     id: quantity 
                     size_hint_x : .1
@@ -167,15 +168,18 @@
                         size_hint_x: .1
                     Label:
                         text:'Total'
-                        size_hint_x: .1
+                        size_hint_x: .2
                 
                 GridLayout:
                     id :products 
                     cols: 1
-            BoxLayout:
-                id: Preview
-                orientation: 'vertical'
-                size_hint_x: .2
+        BoxLayout:
+            id: Preview
+            orientation: 'vertical'
+            size_hint_x: .2 
 
-                BoxLayout:
-                    orientation:'vertical'
+            TextInput:
+                id: reciept_preview 
+                readonly: True # Can't be modified by user
+                text: 'Super Serve \n 123 Banafseg.\n The 5th Settlement.Space\n\nTel:(20)10-2928-4678 \nReciept Number: \n Date: \n\n'
+            
