@@ -56,7 +56,7 @@
             size_hint_x: .4
 
         Button: 
-            id: product
+            id: product 
             text: 'Default Product'
             background_normal: ''
             background_color: (.06,.4,.4,1)
@@ -182,4 +182,16 @@
                 id: reciept_preview 
                 readonly: True # Can't be modified by user
                 text: 'Super Serve \n 123 Banafseg.\n The 5th Settlement.Space\n\nTel:(20)10-2928-4678 \nReciept Number: \n Date: \n\n'
-            
+    BoxLayout:
+        id: footer
+        size_hint_y: None
+        height : 30
+        canvas.before:
+            Color : 
+                rgba: (.06, .47,.47,1)
+            Rectangle: 
+                pos : self.pos
+                size : self.size
+        Label:
+            text : 'Maintained by Sallam'
+            orientation:'horizontal'
