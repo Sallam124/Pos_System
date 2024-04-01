@@ -1,0 +1,89 @@
+<AdminWindow>:
+
+    id: main_win
+    orientation: 'vertical'
+    canvas.before:
+        Color:
+            rgba: (1, 1, 1, 1)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    BoxLayout:
+        id: top_nav
+        size_hint_y: None
+        height: 30
+        canvas.before:
+            Color:
+                rgba: (.06, .45, .45, 1)
+            Rectangle:
+                size: self.size
+                pos: self.pos
+
+        Button:
+            id: file_trigger
+            text: 'File'
+            on_release: file_dropdown.open(self)
+            size_hint: (0.1, None)
+            height: 30
+
+            Widget:  # Empty widget for spacing
+                on_parent: file_dropdown.dismiss()
+                
+                Dropdown:
+                    id: file_dropdown
+                    Button:
+                        id: close
+                        text: 'Quit'
+                        size_hint_y: None
+                        height: 30
+                    Button:
+                        text: 'Save'
+                        size_hint_y: None
+                        height: 30
+                    Button:
+                        text: 'Open'
+                        size_hint_y: None
+                        height: 30
+
+        Label:
+            id: Title
+            text: 'Admin Dashboard'
+            bold: True
+            size_hint: (0.9, None)
+            height: 30
+            
+    BoxLayout:
+        id: content_nav
+
+        BoxLayout:
+            id: Nav_tabs
+            size_hint_x: .3
+            orientation: 'vertical'
+            canvas.before:
+                Color:
+                    rgba: (.06, .45, .45, 1)
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            ToggleButton:
+                id:user_toggle
+                size_hint_y:.2
+                text:'Manage Users'
+                state: 'down'
+            ToggleButton:
+                id:product_toggle
+                size_hint_y:.2
+                text:'Manage Products' 
+            ToggleButton:
+                id:Analysis
+                size_hint_y:.2
+                text:'Analysis'  
+            Label:
+                id: sp
+                text: ''
+                size_hint_y: .4
+                                    
+        BoxLayout:  # Added BoxLayout here
+            id: content
+            size_hint_x: .7
