@@ -12,13 +12,13 @@ class Operation_Window(BoxLayout):
         
         self.cart = []
         self.quantity = []
-
+        self.total = 0.00
     def update_purchase(self):  
         
         pcode = self.ids.productcode.text # Get the product code entered by the user from kivy file
         products_container = self.ids.products # Get the container where product details will be displayed from kivy file
         
-        if pcode == '1234':
+        if pcode == '1234' or '2345':
             # Create a new layout to hold the details of the product that is being added 
             details = BoxLayout(size_hint_y= None,height=30,pos_hint={'top': 1})
             products_container.add_widget(details)
@@ -49,9 +49,14 @@ class Operation_Window(BoxLayout):
 
 
             pro_name = 'Product One'
+            if pcode == '2345':
+                pro_name = 'Oslo'
             pro_price = 1.00
             product_quantity_str = str('1')
-            purchase_Total = '\n\n  Total\t\t\t\t\t\t0.00'
+            self.total += pro_price
+            purchase_Total = '\n\nTotal\t\t\t\t\t\t'+str(self.total)
+            self.ids.product.text = pro_name
+            self.ids.cur_price.text = str(pro_price)
 
             # Get the receipt preview widget and its current text
             preview = self.ids.reciept_preview
@@ -74,16 +79,16 @@ class Operation_Window(BoxLayout):
                 self.quantity[i] = product_quantity_str
 
             # Construct expressions for finding and replacing the product quantity in the receipt text
-                expr = '%s\t\tx\d\t' % (pro_name)
-                rexpr = pro_name + '\t\tx' + str(product_quantity_str) + '\t'
+                find_ = '%s\t\tx\d\t' % (pro_name)
+                replace_ = pro_name + '\t\tx' + str(product_quantity_str) + '\t'
             # Replace the existing product quantity in the receipt text with the updated quantity
-                new_text = re.sub(expr, rexpr, previous)
-                preview.text = new_text
+                new_text = re.sub(find_, replace_, previous)
+                preview.text = new_text + purchase_Total.replace('\n','')
             else:
                 self.cart.append(pcode)
                 self.quantity.append(1)
             # Construct a new line for the product in the receipt text
-                new_text = '\n'.join([previous, pro_name + '\t\tx' + str(product_quantity_str) + '\t\t' + str(pro_price), purchase_Total])
+                new_text = ''.join([previous, pro_name + '\t\tx' + str(product_quantity_str) + '\t\t' + str(pro_price), purchase_Total])
             # Update the receipt text with the new line
                 preview.text = new_text
 
