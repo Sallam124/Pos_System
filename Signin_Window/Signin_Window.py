@@ -1,9 +1,9 @@
+import subprocess
 from kivy.logger import Logger  
 Logger.debug("Debug message")
 Logger.info("Info message")
 Logger.warning("Warning message")
 Logger.error("Error message")
-
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 
@@ -27,7 +27,8 @@ class Signin_Window(BoxLayout):
             info.text ='[color=#FF0000]Password is required[/color]'  
         else:
             if name == 'admin' and password == 'admin':
-                info.text= '[color=#00FF00]Success[/color]' 
+                info.text= '[color=#00FF00]Success[/color]'
+                subprocess.call(['python', 'Operator\Operation'])   
             else:
                 info.text ='[color=#FF0000]Invalid Username and/or Password[/color]' 
 
