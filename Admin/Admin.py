@@ -3,7 +3,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
-
+from kivy.clock import Clock
+from kivy.uix.modalview import ModalView
 from collections import OrderedDict
 from pymongo import MongoClient
 from  Utilities.data import DataTable
@@ -16,14 +17,18 @@ import matplotlib
 
 print("Current backend:", matplotlib.get_backend())
 
+
 class AdminWindow(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        
+        # Connect to MongoDB
         client = MongoClient()
         db = client.Pos
         self.users = db.users
         self.products = db.stocks
 
+        # Initialize product spinners
         product_code = []
         product_name = []
         spinvals = []
@@ -39,17 +44,19 @@ class AdminWindow(BoxLayout):
             spinvals.append(line)
         self.ids.target_product.values = spinvals
 
+        # Display Users
         content = self.ids.scrn_contents
         users = self.get_users()
         userstable = DataTable(table=users)
         content.add_widget(userstable)
 
-        #Display Products
+        # Display Products
         product_scrn = self.ids.scrn_product_contents
         products = self.get_products()
         prod_table = DataTable(table=products)
         product_scrn.add_widget(prod_table)
 
+    # Method to add user input fields
     def add_user_fields(self):
         target = self.ids.ops_fields
         target.clear_widgets()
@@ -67,6 +74,7 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_des)
         target.add_widget(crud_submit)
     
+    # Method to add product input fields
     def add_product_fields(self):
         target = self.ids.ops_fields_p
         target.clear_widgets()
@@ -89,6 +97,7 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_purchase)
         target.add_widget(crud_submit)
         
+    # Method to add a user to the database
     def add_user(self, first,last,user,pwd,des):
         content = self.ids.scrn_contents
         content.clear_widgets()
@@ -100,6 +109,7 @@ class AdminWindow(BoxLayout):
         userstable = DataTable(table=users)
         content.add_widget(userstable)
 
+    # Method to add a product to the database
     def add_product(self,code,name,weight,stock,sold,order,purchase):
         content = self.ids.scrn_product_contents
         content.clear_widgets()
@@ -110,6 +120,7 @@ class AdminWindow(BoxLayout):
         stocktable = DataTable(table=prodz)
         content.add_widget(stocktable)
 
+    # Method to update user input fields
     def update_user_fields(self):
         target = self.ids.ops_fields
         target.clear_widgets()
@@ -127,6 +138,7 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_des)
         target.add_widget(crud_submit)
     
+    # Method to update product input fields
     def update_product_fields(self):
         target = self.ids.ops_fields_p
         target.clear_widgets()
@@ -150,6 +162,7 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_submit)
     
     
+    # Method to update user information in the database
     def update_user(self, first,last,user,pwd,des):
         content = self.ids.scrn_contents
         content.clear_widgets()
@@ -160,6 +173,7 @@ class AdminWindow(BoxLayout):
         userstable = DataTable(table=users)
         content.add_widget(userstable)
     
+    # Method to update product information in the database
     def update_product(self,code,name,weight,stock,sold,order,purchase):
         content = self.ids.scrn_product_contents
         content.clear_widgets()
@@ -170,6 +184,7 @@ class AdminWindow(BoxLayout):
         stocktable = DataTable(table=prodz)
         content.add_widget(stocktable)
     
+    # Method to remove user input fields
     def remove_user_fields(self):
         target = self.ids.ops_fields
         target.clear_widgets()
@@ -179,6 +194,7 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_user)
         target.add_widget(crud_submit)
     
+    # Method to remove product input fields
     def remove_product_fields(self):
         target = self.ids.ops_fields_p
         target.clear_widgets()
@@ -188,6 +204,7 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_code)
         target.add_widget(crud_submit)
 
+    # Method to remove a user from the database
     def remove_user(self,user):
         content = self.ids.scrn_contents
         content.clear_widgets()
@@ -198,6 +215,7 @@ class AdminWindow(BoxLayout):
         userstable = DataTable(table=users)
         content.add_widget(userstable)
     
+    # Method to remove a product from the database
     def remove_product(self,code):
         content = self.ids.scrn_product_contents
         content.clear_widgets()
@@ -208,6 +226,7 @@ class AdminWindow(BoxLayout):
         stocktable = DataTable(table=prodz)
         content.add_widget(stocktable)
 
+    # Method to retrieve users from the database
     def get_users(self):
         client = MongoClient()
         db = client.Pos
@@ -232,7 +251,6 @@ class AdminWindow(BoxLayout):
                 pwd = pwd[:10] + '...'
             passwords.append(pwd)
             designations.append(user['designation'])
-        # print(designations)
         users_length = len(first_names)
         idx = 0
         while idx < users_length:
@@ -246,6 +264,7 @@ class AdminWindow(BoxLayout):
         
         return _users
 
+    # Method to retrieve products from the database
     def get_products(self):
         client = MongoClient()
         db = client.Pos
@@ -287,7 +306,6 @@ class AdminWindow(BoxLayout):
                 last_purchase.append(product['last_purchase'])
             except KeyError:
                 last_purchase.append('')
-        # print(designations)
         products_length = len(product_code)
         idx = 0
         while idx < products_length:
@@ -298,12 +316,11 @@ class AdminWindow(BoxLayout):
             _stocks['sold'][idx] = sold[idx]
             _stocks['order'][idx] = order[idx]
             _stocks['last_purchase'][idx] = last_purchase[idx]
-           
-
             idx += 1
         
         return _stocks
 
+    # Method to view statistics
     def view_stats(self):
         plt.cla()
         self.ids.analysis_res.clear_widgets()
@@ -328,6 +345,7 @@ class AdminWindow(BoxLayout):
         self.ids.analysis_res.add_widget(mtp(plt.gcf()))
 
 
+    # Method to change screen based on button click
     def change_screen(self, instance):
         if instance.text == 'Manage Products':
             self.ids.scrn_mngr.current = 'scrn_product_content'
