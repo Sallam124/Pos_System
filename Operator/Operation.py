@@ -37,8 +37,8 @@ class Operation_Window(BoxLayout):
         
             discount = Label(text='0.00' ,size_hint_y= .7, size_hint_x = .1, color = get_color_from_hex('#43eb34'))
         
-            price = Label(text= target_code['product_price'] ,size_hint_y= .7, size_hint_x = .1, color = get_color_from_hex('#43eb34'))
-        
+            price = Label(text=str(target_code['product_price']), size_hint_y=0.7, size_hint_x=0.1, color=get_color_from_hex('#43eb34'))
+
             total = Label(text= '0.00',size_hint_y= .7, size_hint_x = .2, color = get_color_from_hex('#43eb34') )
         
             details.add_widget(code)
@@ -97,12 +97,11 @@ class Operation_Window(BoxLayout):
             # Update the receipt text with the new line
                 preview.text = new_text
             
-            self.ids.disc_inp.text = '0.00'
-            self.ids.disc_perc_inp.text = '0'
-            self.ids.qty_inp.text = str(product_quantity_str)
-            self.ids.price_inp.text = str(pro_price)
-            self.ids.vat_inp.text = '15%'
-            self.ids.total_inp.text = str(pro_price)
+            self.ids.discount.text = '0.00'
+            self.ids.quantity.text = str(product_quantity_str)
+            self.ids.price.text = str(pro_price)
+            self.ids.vat.text = '15%'
+            self.ids.total.text = str(pro_price)
 
 class OperatorApp(App):
     def build(self):
