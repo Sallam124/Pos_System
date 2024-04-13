@@ -2,33 +2,35 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.uix.spinner import Spinner
 from kivy.clock import Clock
 from kivy.uix.modalview import ModalView
+
 from collections import OrderedDict
 from pymongo import MongoClient
-from  Utilities.data import DataTable
+from Utilities.data import DataTable
 from datetime import datetime
 import hashlib
 import pandas as pd
 import matplotlib.pyplot as plt
-from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg as mtp
-import matplotlib
+from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg as FCK
 
-print("Current backend:", matplotlib.get_backend())
+class Notify(ModalView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
+        self.size_hint = (.7,.7)
 
 class AdminWindow(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
-        # Connect to MongoDB
         client = MongoClient()
         db = client.Pos
         self.users = db.users
         self.products = db.stocks
+        self.notify = Notify()
 
-        # Initialize product spinners
         product_code = []
         product_name = []
         spinvals = []
@@ -44,19 +46,17 @@ class AdminWindow(BoxLayout):
             spinvals.append(line)
         self.ids.target_product.values = spinvals
 
-        # Display Users
         content = self.ids.scrn_contents
         users = self.get_users()
         userstable = DataTable(table=users)
         content.add_widget(userstable)
 
-        # Display Products
+        #Display Products
         product_scrn = self.ids.scrn_product_contents
         products = self.get_products()
         prod_table = DataTable(table=products)
         product_scrn.add_widget(prod_table)
 
-    # Method to add user input fields
     def add_user_fields(self):
         target = self.ids.ops_fields
         target.clear_widgets()
@@ -74,7 +74,6 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_des)
         target.add_widget(crud_submit)
     
-    # Method to add product input fields
     def add_product_fields(self):
         target = self.ids.ops_fields_p
         target.clear_widgets()
@@ -97,30 +96,42 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_purchase)
         target.add_widget(crud_submit)
         
-    # Method to add a user to the database
     def add_user(self, first,last,user,pwd,des):
-        content = self.ids.scrn_contents
-        content.clear_widgets()
+        
         pwd = hashlib.sha256(pwd.encode()).hexdigest()
-        self.users.insert_one({'first_name':first,'last_name':last,
+        if first == '' or last == '' or user == '' or pwd == '':
+            self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,1)
+        else:
+            self.users.insert_one({'first_name':first,'last_name':last,
         'user_name':user,'password':pwd,'designation':des,'date':datetime.now()})
+            content = self.ids.scrn_contents
+            content.clear_widgets()
 
-        users = self.get_users()
-        userstable = DataTable(table=users)
-        content.add_widget(userstable)
+            users = self.get_users()
+            userstable = DataTable(table=users)
+            content.add_widget(userstable)
+    
+    def killswitch(self,dtx):
+        self.notify.dismiss()
+        self.notify.clear_widgets()
 
-    # Method to add a product to the database
     def add_product(self,code,name,weight,stock,sold,order,purchase):
-        content = self.ids.scrn_product_contents
-        content.clear_widgets()
+        
+        if code == '' or name == '' or weight == '' or stock == '' or order == '': 
+            self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,1)
+        else:
+            self.products.insert_one({'product_code':code,'product_name':name,'product_weight':weight,'in_stock':stock,'sold':sold,'order':order,'last_purchase':purchase})
+            content = self.ids.scrn_product_contents
+            content.clear_widgets()
 
-        self.products.insert_one({'product_code':code,'product_name':name,'product_weight':weight,'in_stock':stock,'sold':sold,'order':order,'last_purchase':purchase})
+            prodz = self.get_products()
+            stocktable = DataTable(table=prodz)
+            content.add_widget(stocktable)
 
-        prodz = self.get_products()
-        stocktable = DataTable(table=prodz)
-        content.add_widget(stocktable)
-
-    # Method to update user input fields
     def update_user_fields(self):
         target = self.ids.ops_fields
         target.clear_widgets()
@@ -138,7 +149,6 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_des)
         target.add_widget(crud_submit)
     
-    # Method to update product input fields
     def update_product_fields(self):
         target = self.ids.ops_fields_p
         target.clear_widgets()
@@ -162,29 +172,68 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_submit)
     
     
-    # Method to update user information in the database
     def update_user(self, first,last,user,pwd,des):
-        content = self.ids.scrn_contents
-        content.clear_widgets()
+        
         pwd = hashlib.sha256(pwd.encode()).hexdigest()
-        self.users.update_one({'user_name':user},{'$set':{'first_name':first,'last_name':last,'user_name':user,'password':pwd,'designation':des,'date':datetime.now()}})
+        if user == '':
+            self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,1)
+        else:
+            user = self.users.find_one({'user_name':user})
+            if user == None:
+                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid Username[/b][/color]',markup=True))
+                self.notify.open()
+                Clock.schedule_once(self.killswitch,1)
+            else:
+                if first == '':
+                    first = user['first_name']
+                if last == '':
+                    last = user['last_name']
+                if pwd == '':
+                    pwd = user['password']
+                self.users.update_one({'user_name':user},{'$set':{'first_name':first,'last_name':last,'user_name':user,'password':pwd,'designation':des,'date':datetime.now()}})
+                content = self.ids.scrn_contents
+                content.clear_widgets()
 
-        users = self.get_users()
-        userstable = DataTable(table=users)
-        content.add_widget(userstable)
+                users = self.get_users()
+                userstable = DataTable(table=users)
+                content.add_widget(userstable)
     
-    # Method to update product information in the database
     def update_product(self,code,name,weight,stock,sold,order,purchase):
-        content = self.ids.scrn_product_contents
-        content.clear_widgets()
 
-        self.products.update_one({'product_code':code},{'$set':{'product_code':code,'product_name':name,'product_weight':weight,'in_stock':stock,'sold':sold,'order':order,'last_purchase':purchase}})
+        if code == '':
+            self.notify.add_widget(Label(text='[color=#FF0000][b]Code required[/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,1)
+        else:
+            target_code = self.products.find_one({'product_code':code})
+            if target_code == None:
+                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid Code[/b][/color]',markup=True))
+                self.notify.open()
+                Clock.schedule_once(self.killswitch,1)
+            else:
+                if name == '':
+                    name = target_code['product_name']
+                if product_weight == '':
+                    product_weight = target_code['product_weight']
+                if stock == '':
+                    stock = target_code['in_stock']
+                if sold == '':
+                    sold = target_code['sold']
+                if order == '':
+                    order = target_code['order']
+                if purchase == '':
+                    purchase = target_code['last_purchase']
+                content = self.ids.scrn_product_contents
+                content.clear_widgets()
+                    
+                self.products.update_one({'product_code':code},{'$set':{'product_code':code,'product_name':name,'product_weight':weight,'in_stock':stock,'sold':sold,'order':order,'last_purchase':purchase}})
     
-        prodz = self.get_products()
-        stocktable = DataTable(table=prodz)
-        content.add_widget(stocktable)
+                prodz = self.get_products()
+                stocktable = DataTable(table=prodz)
+                content.add_widget(stocktable)
     
-    # Method to remove user input fields
     def remove_user_fields(self):
         target = self.ids.ops_fields
         target.clear_widgets()
@@ -194,7 +243,6 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_user)
         target.add_widget(crud_submit)
     
-    # Method to remove product input fields
     def remove_product_fields(self):
         target = self.ids.ops_fields_p
         target.clear_widgets()
@@ -204,29 +252,49 @@ class AdminWindow(BoxLayout):
         target.add_widget(crud_code)
         target.add_widget(crud_submit)
 
-    # Method to remove a user from the database
     def remove_user(self,user):
-        content = self.ids.scrn_contents
-        content.clear_widgets()
 
-        self.users.remove({'user_name':user})
+        if user == '':
+            self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,1)
+        else:
+            target_user = self.users.find_one({'user_name':user})
+            if target_user == None:
+                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid UserName[/b][/color]',markup=True))
+                self.notify.open()
+                Clock.schedule_once(self.killswitch,1)
+            else:
+                content = self.ids.scrn_contents
+                content.clear_widgets()
 
-        users = self.get_users()
-        userstable = DataTable(table=users)
-        content.add_widget(userstable)
+                self.users.remove({'user_name':user})
+
+                users = self.get_users()
+                userstable = DataTable(table=users)
+                content.add_widget(userstable)
     
-    # Method to remove a product from the database
     def remove_product(self,code):
-        content = self.ids.scrn_product_contents
-        content.clear_widgets()
+        if code == '':
+            self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
+            self.notify.open()
+            Clock.schedule_once(self.killswitch,1)
+        else:
+            target_code = self.products.find_one({'product_code':code})
+            if target_code == None:
+                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid Code[/b][/color]',markup=True))
+                self.notify.open()
+                Clock.schedule_once(self.killswitch,1)
+            else:
+                content = self.ids.scrn_product_contents
+                content.clear_widgets()
 
-        self.products.remove({'product_code':code})
+                self.products.remove({'product_code':code})
 
-        prodz = self.get_products()
-        stocktable = DataTable(table=prodz)
-        content.add_widget(stocktable)
+                prodz = self.get_products()
+                stocktable = DataTable(table=prodz)
+                content.add_widget(stocktable)
 
-    # Method to retrieve users from the database
     def get_users(self):
         client = MongoClient()
         db = client.Pos
@@ -251,6 +319,7 @@ class AdminWindow(BoxLayout):
                 pwd = pwd[:10] + '...'
             passwords.append(pwd)
             designations.append(user['designation'])
+        # print(designations)
         users_length = len(first_names)
         idx = 0
         while idx < users_length:
@@ -264,7 +333,6 @@ class AdminWindow(BoxLayout):
         
         return _users
 
-    # Method to retrieve products from the database
     def get_products(self):
         client = MongoClient()
         db = client.Pos
@@ -306,6 +374,7 @@ class AdminWindow(BoxLayout):
                 last_purchase.append(product['last_purchase'])
             except KeyError:
                 last_purchase.append('')
+        # print(designations)
         products_length = len(product_code)
         idx = 0
         while idx < products_length:
@@ -316,20 +385,20 @@ class AdminWindow(BoxLayout):
             _stocks['sold'][idx] = sold[idx]
             _stocks['order'][idx] = order[idx]
             _stocks['last_purchase'][idx] = last_purchase[idx]
+           
+
             idx += 1
         
         return _stocks
 
-    # Method to view statistics
     def view_stats(self):
         plt.cla()
         self.ids.analysis_res.clear_widgets()
         target_product = self.ids.target_product.text
         target = target_product[:target_product.find(' | ')]
-        name = target_product[target_product.find(' | '):]       
+        name = target_product[target_product.find(' | '):] 
 
         df = pd.read_csv("C:\\Users\\salla\\OneDrive\\Desktop\\Integrative Project\\Integrative-Project\\Admin\\products_purchase.csv")
-
         purchases = []
         dates = []
         count = 0
@@ -342,10 +411,9 @@ class AdminWindow(BoxLayout):
         plt.ylabel('Total Purchases')
         plt.xlabel('day')
 
-        self.ids.analysis_res.add_widget(mtp(plt.gcf()))
+        self.ids.analysis_res.add_widget(FCK(plt.gcf()))
 
 
-    # Method to change screen based on button click
     def change_screen(self, instance):
         if instance.text == 'Manage Products':
             self.ids.scrn_mngr.current = 'scrn_product_content'
