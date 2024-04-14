@@ -1,3 +1,4 @@
+#: import Window kivy.core.window.Window
 <FlatButton@ButtonBehavior+Label>:
     text: 'default'
 
@@ -34,11 +35,20 @@
             
                 DropDown:
                     id: file_dropdown
+                    
+                    Button:
+                        id: close
+                        text: 'logout'
+                        size_hint_y: None
+                        height: 30
+                        on_release: root.logout()
                     Button:
                         id: close
                         text: 'quit'
                         size_hint_y: None
                         height: 30
+                        on_release: Window.close()
+
         Label:
             text: 'Admin Dashboard'
             bold: True
