@@ -5,6 +5,9 @@ from kivy.clock import Clock
 from kivy.utils import get_color_from_hex
 import re
 from pymongo import MongoClient
+from kivy.lang import Builder
+
+Builder.load_file('Operator/Operator.kv')
 
 class Operation_Window(BoxLayout):
     def __init__(self,**kwargs):
@@ -16,6 +19,10 @@ class Operation_Window(BoxLayout):
         self.cart = []
         self.quantity = []
         self.total = 0.00
+
+    def logout(self):
+        self.parent.parent.current = 'Screen_sign'
+
     def update_purchase(self):  
         
         pcode = self.ids.productcode.text # Get the product code entered by the user from kivy file
@@ -103,10 +110,10 @@ class Operation_Window(BoxLayout):
             self.ids.vat.text = '15%'
             self.ids.total.text = str(pro_price)
 
-class OperatorApp(App):
-    def build(self):
-        return Operation_Window()
+# class OperatorApp(App):
+#     def build(self):
+#         return Operation_Window()
         
-if __name__ == "__main__":
-    start = OperatorApp()
-    start.run()
+# if __name__ == "__main__":
+#     start = OperatorApp()
+#     start.run()
