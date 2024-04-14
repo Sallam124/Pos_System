@@ -30,12 +30,15 @@
             bold: True 
             color: (1,1,1,1)
 
-        Label: 
-            id: loggedin_user
-            text: 'admin'
+        Button:
+            id: loggedin_user_button
+            text: 'Admin'
             size_hint_y: .9
             bold: True 
             color: (1,1,1,1)
+            background_normal: ''
+            background_color: (0, 0, 0, 0)  # Make the button transparent
+            on_release: root.logout()
 
     BoxLayout: #status bar
         id : current 
