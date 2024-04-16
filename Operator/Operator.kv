@@ -184,7 +184,16 @@
             TextInput:
                 id: reciept_preview 
                 readonly: True # Can't be modified by user
-                text: 'Super Serve \n 123 Banafseg.\n The 5th Settlement.Space\n\nTel:(20)10-2928-4678 \nReciept Number: \n Date: \n\n'
+                text: 'Super Serve \n 123 Banafseg.\n The 5th Settlement.Space\n\nTel:(20)10-2928-4678 \nReciept Number:0001 \n Date:16/4/2024 \n\n'
+                
+            Button:
+                rgba: (.06, .45, .45, 1)
+                text: 'Checkout'
+                size_hint: 1, .2
+                on_release:
+                    root.update_database()
+                    root.reset_order()
+
     BoxLayout:
         id: footer
         size_hint_y: None
@@ -198,3 +207,5 @@
         Label:
             text : 'Maintained by Sallam'
             orientation:'horizontal'
+
+
