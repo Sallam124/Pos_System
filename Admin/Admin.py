@@ -91,7 +91,7 @@ class AdminWindow(BoxLayout):
         pwd = hashlib.sha256(pwd.encode()).hexdigest()  # Hash the password
         if first == '' or last == '' or user == '' or pwd == '':
             # Display notification if any required field is empty
-            self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
+            self.notify.add_widget(Label(text='[color=#FFFFFF][b]All Fields Required[/b][/color]',markup=True))
             self.notify.open()
             Clock.schedule_once(self.killswitch,1)
         else:
@@ -138,7 +138,7 @@ class AdminWindow(BoxLayout):
     def add_product(self,code,name,weight,stock,sold,price,purchase):
         if code == '' or name == '' or weight == '' or stock == '' or price == '': 
             # Display notification if any required field is empty
-            self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
+            self.notify.add_widget(Label(text='[color=#FFFFFF][b]All Fields Required[/b][/color]',markup=True))
             self.notify.open()
             Clock.schedule_once(self.killswitch,1)
         else:
@@ -175,14 +175,14 @@ class AdminWindow(BoxLayout):
         pwd = hashlib.sha256(pwd.encode()).hexdigest()  # Hash the password
         if user == '':
             # Display notification if username is empty
-            self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
+            self.notify.add_widget(Label(text='[color=#FFFFFF][b]All Fields Required[/b][/color]',markup=True))
             self.notify.open()
             Clock.schedule_once(self.killswitch,1)
         else:
             user = self.users.find_one({'user_name':user})
             if user == None:
                 # Display notification if username is invalid
-                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid Username[/b][/color]',markup=True))
+                self.notify.add_widget(Label(text='[color=#FFFFFF][b]Invalid Username[/b][/color]',markup=True))
                 self.notify.open()
                 Clock.schedule_once(self.killswitch,1)
             else:
@@ -229,14 +229,14 @@ class AdminWindow(BoxLayout):
     def update_product(self, code, name, weight, stock, sold, price, purchase):
         if code == '':
             # Display notification if product code is empty
-            self.notify.add_widget(Label(text='[color=#FF0000][b]Code required[/b][/color]', markup=True))
+            self.notify.add_widget(Label(text='[color=#FFFFFF][b]Code required[/b][/color]', markup=True))
             self.notify.open()
             Clock.schedule_once(self.killswitch, 1)
         else:
             target_code = self.products.find_one({'product_code': code})
             if target_code is None:
                 # Display notification if product code is invalid
-                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid Code[/b][/color]', markup=True))
+                self.notify.add_widget(Label(text='[color=#FFFFFF][b]Invalid Code[/b][/color]', markup=True))
                 self.notify.open()
                 Clock.schedule_once(self.killswitch, 1)
             else:
@@ -286,14 +286,14 @@ class AdminWindow(BoxLayout):
     def remove_user(self,user):
         if user == '':
             # Display notification if username is empty
-            self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
+            self.notify.add_widget(Label(text='[color=#FFFFFF][b]All Fields Required[/b][/color]',markup=True))
             self.notify.open()
             Clock.schedule_once(self.killswitch,1)
         else:
             target_user = self.users.find_one({'user_name':user})
             if target_user == None:
                 # Display notification if username is invalid
-                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid UserName[/b][/color]',markup=True))
+                self.notify.add_widget(Label(text='[color=#FFFFFF][b]Invalid UserName[/b][/color]',markup=True))
                 self.notify.open()
                 Clock.schedule_once(self.killswitch,1)
             else:
@@ -315,14 +315,14 @@ class AdminWindow(BoxLayout):
     def remove_product(self,code):
         if code == '':
             # Display notification if product code is empty
-            self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
+            self.notify.add_widget(Label(text='[color=#FFFFFF][b]All Fields Required[/b][/color]',markup=True))
             self.notify.open()
             Clock.schedule_once(self.killswitch,1)
         else:
             target_code = self.products.find_one({'product_code':code})
             if target_code == None:
                 # Display notification if product code is invalid
-                self.notify.add_widget(Label(text='[color=#FF0000][b]Invalid Code[/b][/color]',markup=True))
+                self.notify.add_widget(Label(text='[color=#FFFFFF][b]Invalid Code[/b][/color]',markup=True))
                 self.notify.open()
                 Clock.schedule_once(self.killswitch,1)
             else:
