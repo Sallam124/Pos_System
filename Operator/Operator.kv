@@ -7,7 +7,7 @@
     orientation: 'vertical'
     canvas.before:
         Color:
-            rgba:(1,1,1,1)
+            rgba:(239, 201, 231, 0.8)
         Rectangle:
             size:self.size
             pos: self.pos
@@ -18,7 +18,7 @@
         height: 40
         canvas.before:
             Color:
-                rgba:(.06,.45,.45,1)
+                rgba: (.06, .45, .45, 1) # Title bar color
             Rectangle:
                 size:self.size
                 pos: self.pos
@@ -33,12 +33,19 @@
         Button:
             id: loggedin_user_button
             text: 'Admin'
-            size_hint_y: .9
+            size_hint_y: 1
             bold: True 
-            color: (1,1,1,1)
+            color: (1, 1, 1, 1)
             background_normal: ''
-            background_color: (0, 0, 0, 0)  # Make the button transparent
-            on_release: root.logout()
+            background_color: (.06, .45, .45, 1)
+            canvas.before:
+                Color:
+                    rgba: (.06, .45, .45, 1)  # Original color
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+
+
 
     BoxLayout: #status bar
         id : current 
@@ -55,20 +62,20 @@
         Button:
             text:'Current Item'
             background_normal: ''
-            background_color: (.06,.3,.32,1)
+            background_color: (.06,.3,.32,1)  # Current item button color
             size_hint_x: .4
 
         Button: 
             id: product 
             text: 'Default Product'
             background_normal: ''
-            background_color: (.06,.4,.4,1)
+            background_color: (.06,.4,.4,1)  # Default product button color
 
         Button:
             id: cur_price
             text: '0.00'
             background_normal: ''
-            background_color: (.06,.65,.65,1)
+            background_color: (.06,.65,.65,1)  # Current price button color
             size_hint_x : .2
 
     BoxLayout: # product details bar
@@ -100,10 +107,10 @@
                     text: 'Disc%'
                     size_hint_x : .1
                 FlatButton:
-                    text: 'Vat'
+                    text: 'Price'
                     size_hint_x : .1
                 FlatButton:
-                    text: 'Price'
+                    text: 'Vat'
                     size_hint_x : .1
                 FlatButton:
                     text: 'Total'
@@ -129,11 +136,11 @@
                     size_hint_x : .1
                     multiline: False
                 TextInput:
-                    id: vat
+                    id: price
                     size_hint_x : .1
                     multiline: False
                 TextInput:
-                    id: price
+                    id: vat
                     size_hint_x : .1
                     multiline: False
                 TextInput:
@@ -170,6 +177,9 @@
                         text:'Price'
                         size_hint_x: .1
                     Label:
+                        text:'Vat'
+                        size_hint_x: .1
+                    Label:
                         text:'Total'
                         size_hint_x: .2
                 
@@ -184,7 +194,7 @@
             TextInput:
                 id: reciept_preview 
                 readonly: True # Can't be modified by user
-                text: 'Super Serve \n 123 Banafseg.\n The 5th Settlement.Space\n\nTel:(20)10-2928-4678 \nReciept Number:0001 \n Date:16/4/2024 \n\n'
+                text: 'Super Serve \n 123 Banafseg.\n The 5th Settlement.Space\nTel:(20)10-2928-4678 \n Date:16/4/2024\nItem \t\t\t Quantity \t\t\t Price\t\t\t Total\n\n'
                 
             Button:
                 rgba: (.06, .45, .45, 1)
@@ -207,5 +217,3 @@
         Label:
             text : 'Maintained by Sallam'
             orientation:'horizontal'
-
-
