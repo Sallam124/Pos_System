@@ -26,13 +26,13 @@
 
         Label:
             text:'POS System'
-            size_hint_x: .9
+            size_hint_x: .5
             bold: True 
             color: (1,1,1,1)
 
-        Button:
+        Label:
             id: loggedin_user_button
-            text: 'Admin'
+            text: 'Main'
             size_hint_y: 1
             bold: True 
             color: (1, 1, 1, 1)
@@ -44,7 +44,22 @@
                 Rectangle:
                     size: self.size
                     pos: self.pos
-
+           
+        Button:
+            text: 'Log Out'
+            size_hint_y: 1
+            size_hint_x: .4
+            bold: True 
+            color: (1, 1, 1, 1)
+            background_normal: ''
+            background_color: (.06, .45, .45, 1)
+            canvas.before:
+                Color:
+                    rgba: (.06, .45, .45, 1)  # Original color
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            on_release: root.logout()
 
 
     BoxLayout: #status bar
@@ -122,10 +137,11 @@
                 height : 45
                 spacing : 5
                 TextInput:
-                    id: quantity 
+                    id: quantity
                     size_hint_x : .1
                     multiline: False
-                    
+                    on_text_validate: root.update_purchase()
+
                 TextInput:
                     id:productcode
                     size_hint_x : .3
@@ -193,6 +209,7 @@
 
             TextInput:
                 id: reciept_preview 
+                
                 readonly: True # Can't be modified by user
                 text: 'Super Serve \n 123 Banafseg.\n The 5th Settlement.Space\nTel:(20)10-2928-4678 \n Date:16/4/2024\nItem \t\t\t Quantity \t\t\t Price\t\t\t Total\n\n'
                 
