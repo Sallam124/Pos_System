@@ -8,6 +8,7 @@ from kivy.uix.modalview import ModalView
 from pymongo import MongoClient
 from kivy.lang import Builder
 from datetime import datetime
+
 Builder.load_file('Operator/Operator.kv')
 
 class notify(ModalView):
@@ -38,8 +39,7 @@ class Operation_Window(BoxLayout):
 
 
         
-            
-
+        
     def update_purchase(self):  
         pcode = self.ids.productcode.text
         products_container = self.ids.products
@@ -48,7 +48,7 @@ class Operation_Window(BoxLayout):
         product_quantity = 0
         reciept_number = int(receipt[1:]) + 1
 
-
+        #Verifying product code entered exists in our database
         target_code = self.stocks.find_one({'product_code': pcode})
         if target_code is None:
             self.notify.add_widget(Label(text='[color=#FFFFFF][b]Product not found![/b][/color]', markup=True))
@@ -67,7 +67,8 @@ class Operation_Window(BoxLayout):
                 Quantity = 1
             else:
                 Quantity = int(Quantity)
-            total_price = Quantity * product_price * 1.15  # Assuming 15% tax, adjust if needed
+            total_price = Quantity * product_price * 1.15  
+
             code = Label(text=pcode, size_hint_y=.7, size_hint_x=.1, color=get_color_from_hex('#111212'))
             name = Label(text=target_code['product_name'] , size_hint_y=.7, size_hint_x=.3, color=get_color_from_hex('#111212'))
             quantity = Label(text=str(Quantity), size_hint_y=.7, size_hint_x=.1, color=get_color_from_hex('#111212'))
@@ -92,16 +93,19 @@ class Operation_Window(BoxLayout):
 
                 
             product_quantity += int(quantity.text) 
-                        
+                    
             Total = pro_price * product_quantity 
             
             self.total += pro_price * Quantity
             self.total = round(self.total,2) 
             
+            vat = self.total * .15
+            vat = round(vat,2)
+            
             self.post_tax =  self.total* 1.15
             self.post_tax = round(self.post_tax,2)
             
-            purchase_Total = '\n\nSubTotal:\t\t\t\t\t\t\t\t\t\t\t\t\t\t ' + str(self.total) +'\nVat:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t 15%\nTotal:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t '+ str(self.post_tax) + '\n\t' 
+            purchase_Total = '\n\nSubTotal:\t\t\t\t\t\t\t\t\t\t\t\t\t\t ' + str(self.total) +'\nVat:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'+ str(vat)+'\nTotal:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t '+ str(self.post_tax) + '\n\t' 
             self.ids.product.text = pro_name
             self.ids.cur_price.text = str(pro_price)
 
@@ -127,9 +131,9 @@ class Operation_Window(BoxLayout):
                 product_quantity = self.quantity[i]
                 Total = pro_price * product_quantity
                 Total = round(Total,2)
-                # Adjust the regular expression pattern to match the entire line, including "Total"
+            
                 find_ = r'%s:\s+x\d+\s+\d+\.\d+\s+\d+\.\d+' % re.escape(pro_name)
-                # Construct the replacement string with placeholders for product name, quantity, product price, and total
+                
                 replace_ = '%s: \t\t\t\tx%d\t\t\t\t\t%.2f\t\t\t %.2f' % (pro_name, product_quantity, pro_price, Total)
                 # Replace the existing product line in the receipt text with the updated line
                 new_text = re.sub(find_, replace_, previous) 
@@ -140,7 +144,7 @@ class Operation_Window(BoxLayout):
                 self.quantity.append(Quantity)
 
                 # Construct a new line for the product in the receipt text
-                new_text = ''.join([previous , pro_name + ':  \t\t\t\tx' + str(Quantity) + '\t\t\t\t\t' + str(pro_price),'\t\t\t ',str(Total), purchase_Total])
+                new_text = ''.join([previous , pro_name + ':  \t\t\t\t\tx' + str(Quantity) + '\t\t\t\t\t' + str(pro_price),'\t\t\t ',str(Total), purchase_Total])
                 # Update the receipt text with the new line
                 preview.text = new_text
 
@@ -171,7 +175,6 @@ class Operation_Window(BoxLayout):
                 purchase_date = datetime.now().strftime("%Y-%m-%d")
                 items_purchased = [{'product_code': item, 'quantity': quantity} for item, quantity in zip(self.cart, self.quantity)]
 
-                # Create the purchase record
                 purchase_record = {
                     'receipt_number': receipt_number,
                     'total': total_amount,
@@ -198,7 +201,8 @@ class Operation_Window(BoxLayout):
             # Increment the last number by 1
             new_number = last_number + 1
             # Construct the new receipt number
-            new_receipt_number = f"R{new_number:06d}" 
+            new_receipt_number = "R{:06d}".format(new_number)
+
 
         return new_receipt_number
     
@@ -206,7 +210,7 @@ class Operation_Window(BoxLayout):
         # Reset order details
         self.ids.product.text = 'Default Product'
         self.ids.cur_price.text = '0.00'
-        self.ids.reciept_preview.text = 'Super Serve \n 123 Banafseg.\n The 5th Settlement.Space\nTel:(20)10-2928-4678 \n Date: 4/16/2024 \n\n'
+        self.ids.reciept_preview.text = 'Super Serve \n123 Banafseg \nThe 5th Settlement Space\nTel:(20)10-2928-4678 \nDate: 4/16/2024 \n\n'
         self.ids.discount.text = '0.00'
         self.ids.quantity.text = '0'
         self.ids.price.text = '0.00'
