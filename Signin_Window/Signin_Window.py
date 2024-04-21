@@ -10,11 +10,13 @@ from kivy.lang import Builder
 from pymongo import MongoClient
 import hashlib
 import time
+from datetime import datetime
 Builder.load_file('Signin_Window/Signin_app.kv')
 
 class Signin_Window(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)  # Initialize the parent class
+
 
     def validate(self):
         client = MongoClient()
@@ -22,7 +24,7 @@ class Signin_Window(BoxLayout):
         users = database.users
         user_input = self.ids.username_field.text.strip()  # Get the entered username
         password_input = self.ids.pwd_field.text.strip()  # Get the entered password
-
+        date = datetime.now().strftime("%Y-%m-%d")
         if user_input == '':
             self.ids.info.text = '[color=#FF0000]Username is required[/color]'  
         elif password_input == '':
@@ -33,7 +35,12 @@ class Signin_Window(BoxLayout):
                 self.ids.info.text = '[color=#FF0000]Invalid Username[/color]'
 
             else:
+                print(user)
+                print(date)
+                users.update_one({'user_name': user}, {'$set': {'last_log': date}})
+                
                 hashed_password = hashlib.sha256(password_input.encode()).hexdigest()
+                
                 if hashed_password == user['password']:
                     des = user['designation'] 
                     self.ids.info.text = '[color=#00FF00]Success[/color]'
@@ -43,11 +50,16 @@ class Signin_Window(BoxLayout):
                         self.parent.parent.current = 'Screen_admin'
                     else:
                         self.parent.parent.current = 'Screen_Operation'
+
+
+
                 else:
                     self.ids.info.text = '[color=#FF0000]Invalid Password[/color]' 
-                    print(user['password'])
-    
+                    
 
+
+
+        
 
 # class Signin_app(App): # use imported (App) to start the program
 #     def build(self):
