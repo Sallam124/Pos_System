@@ -29,20 +29,12 @@ class AdminWindow(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
-        # Initialize MongoDB client and connect to the database
-        try:
-            
-            client = MongoClient("mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/")
-            self.db = client.Pos    
-            self.stocks = self.db.stocks
-            self.Purchase_Records = self.db.Purchase_Records
-        except Exception as e:
-            print("Failed to connect to online database. Using local MongoDB instance.")
 
-            client = MongoClient()
-        db = client.Pos
-        self.users = db.users
-        self.products = db.stocks
+        client_local = MongoClient()
+        self.db = client_local.Pos    
+        self.products = self.db.stocks
+        self.Purchase_Records = self.db.Purchase_Records
+
         self.notify = Notify()  # Notification modal instance
 
         # Populate product Spinner with data from database
@@ -339,10 +331,8 @@ class AdminWindow(BoxLayout):
                 content.clear_widgets()
 
                 # Remove product from the database
-                self.products.delete_one({'product_code':code})
-                self.notify.add_widget(Label(text='[color=#FFFFFF][b]User has been Deleted[/b][/color]',markup=True))
-                self.notify.open()
-                Clock.schedule_once(self.killswitch,1)
+                self.products.remove({'product_code':code})
+
                 # Update product table
                 prodz = self.get_products()
                 stocktable = DataTable(table=prodz)
