@@ -20,7 +20,7 @@ class MainWindow(BoxLayout):
 class Mainapp(App):
     def build(self):
 
-        return MainWindow()
+        return MainWindow() 
     
 if __name__ == '__main__':
     Mainapp().run()
