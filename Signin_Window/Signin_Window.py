@@ -19,7 +19,16 @@ class Signin_Window(BoxLayout):
 
 
     def validate(self):
-        client = MongoClient()
+        try:
+            
+            client = MongoClient("mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/")
+            self.db = client.Pos    
+            self.stocks = self.db.stocks
+            self.Purchase_Records = self.db.Purchase_Records
+        except Exception as e:
+            print("Failed to connect to online database. Using local MongoDB instance.")
+
+            client = MongoClient()
         database = client.Pos
         users = database.users
         user_input = self.ids.username_field.text.strip()  # Get the entered username
