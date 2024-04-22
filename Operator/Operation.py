@@ -72,7 +72,7 @@ class Operation_Window(BoxLayout):
             online_db = online_client[db_name]
     
             online_collection = online_db[collection_name]
-            online_collection.update_one({'product_code': filter}, {'$set': {"column_name": Record}})
+            online_collection.update_one({'product_code': filter}, {'$set': {column_name: Record}})
                 
             print("Synchronization Successful")
         except Exception as e:
@@ -212,8 +212,8 @@ class Operation_Window(BoxLayout):
                 self.stocks.update_one({'product_code': item}, {'$set': {'last_purchase': purchase_date}})
 
 
-                self.Update_online_database(item, new_quantity, "in_stock", 'stocks')
-                self.Update_online_database(item, current_sold, "sold", 'stocks')
+                self.Update_online_database(item, new_quantity, "stocks", 'in_stock')
+                self.Update_online_database(item, current_sold, "stocks", 'sold')
 
                 # Insert a new record for the transaction
                 receipt_number = self.generate_receipt_number()  # Generate a new receipt number
