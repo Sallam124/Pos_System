@@ -16,21 +16,15 @@ Builder.load_file('Signin_Window/Signin_app.kv')
 class Signin_Window(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)  # Initialize the parent class
-
+    
 
     def validate(self):
-        try:
-            
-            client = MongoClient("mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/")
-            self.db = client.Pos    
-            self.stocks = self.db.stocks
-            self.Purchase_Records = self.db.Purchase_Records
-        except Exception as e:
-            print("Failed to connect to online database. Using local MongoDB instance.")
 
-            client = MongoClient()
-        database = client.Pos
-        users = database.users
+        client = MongoClient()
+        self.db = client.Pos    
+        self.users = self.db.users
+
+
         user_input = self.ids.username_field.text.strip()  # Get the entered username
         password_input = self.ids.pwd_field.text.strip()  # Get the entered password
         date = datetime.now().strftime("%Y-%m-%d")
@@ -39,14 +33,13 @@ class Signin_Window(BoxLayout):
         elif password_input == '':
             self.ids.info.text = '[color=#FF0000]Password is required[/color]'
         else:
-            user = users.find_one({'user_name': user_input})
+            user = self.users.find_one({'user_name': user_input})
             if user == None:
                 self.ids.info.text = '[color=#FF0000]Invalid Username[/color]'
 
             else:
-                print(user)
-                print(date)
-                users.update_one({'user_name': user}, {'$set': {'last_log': date}})
+
+                self.users.update_one({'user_name': user}, {'$set': {'last_log': date}})
                 
                 hashed_password = hashlib.sha256(password_input.encode()).hexdigest()
                 
