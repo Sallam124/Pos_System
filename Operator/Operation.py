@@ -19,7 +19,16 @@ class notify(ModalView):
 class Operation_Window(BoxLayout):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
-        client = MongoClient()
+        try:
+            
+            client = MongoClient("mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/")
+            self.db = client.Pos    
+            self.stocks = self.db.stocks
+            self.Purchase_Records = self.db.Purchase_Records
+        except Exception as e:
+            print("Failed to connect to online database. Using local MongoDB instance.")
+
+            client = MongoClient()
         self.db = client.Pos    
         self.stocks = self.db.stocks
         self.notify = notify()
@@ -144,7 +153,7 @@ class Operation_Window(BoxLayout):
                 self.quantity.append(Quantity)
 
                 # Construct a new line for the product in the receipt text
-                new_text = ''.join([previous , pro_name + ':  \t\t\t\t\tx' + str(Quantity) + '\t\t\t\t\t' + str(pro_price),'\t\t\t ',str(Total), purchase_Total])
+                new_text = ''.join([previous , pro_name + '  \t\t\t\t\tx' + str(Quantity) + '\t\t\t\t\t' + str(pro_price),'\t\t\t ',str(Total), purchase_Total])
                 # Update the receipt text with the new line
                 preview.text = new_text
 
@@ -159,10 +168,10 @@ class Operation_Window(BoxLayout):
         for item, quantity in zip(self.cart, self.quantity):
             target_code = self.stocks.find_one({'product_code': item})
             if target_code:
-                current_quantity = target_code.get('in_stock', 0)
+                current_quantity = int(target_code.get('in_stock', 0))  
                 new_quantity = current_quantity - quantity
                 
-                current_sold = target_code.get('sold', 0)
+                current_sold = int(target_code.get('sold', 0))
                 current_sold += quantity
 
                 # Update the quantity in the database
@@ -172,7 +181,8 @@ class Operation_Window(BoxLayout):
                 # Insert a new record for the transaction
                 receipt_number = self.generate_receipt_number()  # Generate a new receipt number
                 total_amount = self.total
-                purchase_date = datetime.now().strftime("%Y-%m-%d")
+                purchase_date = datetime.now().strftime("%Y-%m-%d %H:%M")
+
                 items_purchased = [{'product_code': item, 'quantity': quantity} for item, quantity in zip(self.cart, self.quantity)]
 
                 purchase_record = {
