@@ -60,7 +60,7 @@ class Operation_Window(BoxLayout):
                 
                 online_collection.insert_one(Record)
                 
-                print("Synchronization Successful")
+            print("Synchronization Successful")
         except Exception as e:
             print("Failed to sync local changes to online database:", e)
 
