@@ -331,7 +331,7 @@ class AdminWindow(BoxLayout):
                 content.clear_widgets()
 
                 # Remove product from the database
-                self.products.remove({'product_code':code})
+                self.products.delete_one({'product_code':code})
 
                 # Update product table
                 prodz = self.get_products()
