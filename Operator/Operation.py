@@ -38,34 +38,48 @@ class Operation_Window(BoxLayout):
     def killswitch(self,dtx):
         self.notify.dismiss()
         self.notify.clear_widgets()
-    def sync_to_online_database(self,Record):
+    def sync_to_online_database(self,Record,collection_name):
         try:
             local_client_uri = "mongodb://localhost:27017/"
             online_client_uri = "mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/"
             db_name = "Pos"
             
-            collection_names = ["Purchase_Records", "users", "stocks"]
+
             
             local_client = MongoClient(local_client_uri)
             online_client = MongoClient(online_client_uri)
             
             local_db = local_client[db_name]
             online_db = online_client[db_name]
-            
-            # Sync each collection from local to online
-            for collection_name in collection_names:
-                local_collection = local_db[collection_name]
-                online_collection = online_db[collection_name]
-                local_changes = list(local_collection.find({}))  # Retrieve all documents
-                
-                online_collection.insert_one(Record)
+       
+            online_collection = online_db[collection_name]
+            online_collection.insert_one(Record)
                 
             print("Synchronization Successful")
         except Exception as e:
             print("Failed to sync local changes to online database:", e)
 
-        
-        
+    def Update_online_database(self, filter, Record, collection_name,column_name):
+        try:
+            local_client_uri = "mongodb://localhost:27017/"
+            online_client_uri = "mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/"
+            db_name = "Pos"
+            
+            local_client = MongoClient(local_client_uri)
+            online_client = MongoClient(online_client_uri)
+            
+            local_db = local_client[db_name]
+            online_db = online_client[db_name]
+    
+            online_collection = online_db[collection_name]
+            online_collection.update_one({'product_code': filter}, {'$set': {"column_name": Record}})
+                
+            print("Synchronization Successful")
+        except Exception as e:
+            print("Failed to sync local changes to online database:", e)
+  
+
+
     def update_purchase(self):  
         pcode = self.ids.productcode.text
         products_container = self.ids.products
@@ -187,18 +201,23 @@ class Operation_Window(BoxLayout):
             if target_code:
                 current_quantity = int(target_code.get('in_stock', 0))
                 new_quantity = current_quantity - quantity
-                
+                purchase_date = datetime.now()
+              
                 current_sold = int(target_code.get('sold', 0))
                 current_sold += quantity
 
                 # Update the quantity in the database
                 self.stocks.update_one({'product_code': item}, {'$set': {'in_stock': new_quantity}})
-                self.stocks.update_many({'product_code': item}, {'$set': {'sold': current_sold}})
-        
+                self.stocks.update_one({'product_code': item}, {'$set': {'sold': current_sold}})
+                self.stocks.update_one({'product_code': item}, {'$set': {'last_purchase': purchase_date}})
+
+
+                self.Update_online_database(item, new_quantity, "in_stock", 'stocks')
+                self.Update_online_database(item, current_sold, "sold", 'stocks')
+
                 # Insert a new record for the transaction
                 receipt_number = self.generate_receipt_number()  # Generate a new receipt number
                 total_amount = self.total
-                purchase_date = datetime.now()
                 items_purchased = [{'product_code': item, 'quantity': quantity} for item, quantity in zip(self.cart, self.quantity)]
 
                 purchase_record = {
@@ -209,9 +228,9 @@ class Operation_Window(BoxLayout):
                 }
 
                 # Insert the record into the database
-                
+                self.Update_online_database(item,purchase_date,"last_purchase","stocks")
                 self.db.Purchase_Records.insert_one(purchase_record)
-                self.sync_to_online_database(purchase_record)
+                self.sync_to_online_database(purchase_record,"Purchase_Records")
             # After deduction, clear the cart and quantity list
             self.cart.clear()
             self.quantity.clear()
