@@ -8,8 +8,13 @@ from kivy.uix.modalview import ModalView
 from pymongo import MongoClient
 from kivy.lang import Builder
 from datetime import datetime
+import requests
+import cv2
+from pyzbar.pyzbar import decode
+from kivy.animation import Animation
+from kivy.properties import ObjectProperty
 
-Builder.load_file('Operator/Operator.kv')
+# Builder.load_file('Operator/Operator.kv')
 
 class notify(ModalView):
     def __init__(self, **kwargs):
@@ -20,75 +25,148 @@ class Operation_Window(BoxLayout):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
 
-        client = MongoClient()
+
+        self.images = [
+            "C:/Users/salla/OneDrive/Desktop/Integrative Project/Integrative-Project/Barcodes/barcode_3.png.png",
+            "C:/Users/salla/OneDrive/Desktop/Integrative Project/Integrative-Project/Barcodes/barcode_4.png.png",
+            "C:/Users/salla/OneDrive/Desktop/Integrative Project/Integrative-Project/Barcodes/barcode_2.png.png"
+        ]
+        
+        client = MongoClient("mongodb://localhost:27017/")
         self.db = client.Pos    
         self.stocks = self.db.stocks
         self.Purchase_Records = self.db.Purchase_Records
+        
         self.notify = notify()
-
+        self.barcode = None
         self.cart = []
         self.quantity = []
         self.total = 0.00
         Total = 0
         self.post_tax = 0
-        
+        self.pending_records = [] 
+        self.pending_updates = [] 
+
+
+        Clock.schedule_interval(self.is_connection_established, 1800)
+
+
+
+    def decode_barcodes(self, image_path=None):
+        # If no image path is provided, return an empty list
+        if image_path is None:
+            return []   
+        else:
+            image = cv2.imread(image_path)
+            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            barcodes = decode(gray_image)    
+            return barcodes
+
+    def decode_and_fetch_product(self, image_path=None):
+        # If no image path is provided, return None
+        if image_path is None:
+            print('sallam')
+            return None
+            # Decode barcodes in the image
+        barcodes = self.decode_barcodes(image_path) 
+        # Assuming barcodes is a list of barcode objects
+        for barcode in barcodes:
+            barcode_data = barcode.data.decode("utf-8")            
+            
+            return barcode_data
+
     def logout(self):
         self.parent.parent.current = 'Screen_sign'
     
     def killswitch(self,dtx):
         self.notify.dismiss()
         self.notify.clear_widgets()
-    def sync_to_online_database(self,Record,collection_name):
-        try:
-            local_client_uri = "mongodb://localhost:27017/"
-            online_client_uri = "mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/"
-            db_name = "Pos"
-            
-
-            
-            local_client = MongoClient(local_client_uri)
-            online_client = MongoClient(online_client_uri)
-            
-            local_db = local_client[db_name]
-            online_db = online_client[db_name]
-       
-            online_collection = online_db[collection_name]
-            online_collection.insert_one(Record)
-                
-            print("Synchronization Successful")
-        except Exception as e:
-            print("Failed to sync local changes to online database:", e)
-
-    def Update_online_database(self, filter, Record, collection_name,column_name):
-        try:
-            local_client_uri = "mongodb://localhost:27017/"
-            online_client_uri = "mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/"
-            db_name = "Pos"
-            
-            local_client = MongoClient(local_client_uri)
-            online_client = MongoClient(online_client_uri)
-            
-            local_db = local_client[db_name]
-            online_db = online_client[db_name]
     
-            online_collection = online_db[collection_name]
-            online_collection.update_one({'product_code': filter}, {'$set': {column_name: Record}})
-                
+    def is_connection_established(self):
+        try:
+            requests.get("http://www.google.com", timeout=5)  # Increase timeout to 10 seconds
+            print("Connection Established")
+            return True
+        except requests.ConnectionError:
+            print("Connection Failed")
+            return False
+        
+    def Connect(self):
+        if self.Connection:
+            online_client= MongoClient("mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/")
+            self.online_db = online_client.Pos
+            self.online_stocks = self.online_db.stocks
+            return True
+        else:
+            return False
+            
+
+    def online_purchase_records(self,Record,column_name): # insert
+
+        if self.Connect():
+
+            online_collection = self.online_db[column_name]
+            online_collection.insert_one(Record)
+                    
             print("Synchronization Successful")
-        except Exception as e:
-            print("Failed to sync local changes to online database:", e)
-  
+        else:
+            self.pending_records.append({'Record': Record, 'column_name': column_name})
+            print("Data Appended, Will Sync After 30 minutes")
+            print(self.pending_records)
+            Clock.schedule_once(self.sync_pending_records,1800)
 
 
-    def update_purchase(self):  
+
+    def sync_to_online_database(self, product_code, column_name):
+
+        if self.Connect():
+            record = self.stocks.find_one({"product_code": product_code})
+            in_stock_value = record.get(column_name)
+
+            filter_query = {"product_code": product_code}
+            update_query = {column_name: in_stock_value}  # Remove $set operator
+            self.online_stocks.replace_one(filter_query, update_query, upsert=True)
+            print("Synchronization Successful")
+        else:
+            print("Failed to sync local changes to online database:")
+            print("Data Will be Updated After 30 Minutes")
+
+            Clock.schedule_once(lambda dt: self.sync_to_online_database(product_code, column_name), 1800)
+
+
+    
+    def sync_pending_records(self):
+        if self.is_connection_established():
+            for record in self.pending_records:
+                self.online_purchase_records(record["purchase_Record"], record["Purhcase_Records"])
+            self.pending_records.clear()  # Remove the comma here
+
+    
+    def barcodes(self):
+        barcode = None
+        # Initialize barcode variable
+        if self.images :  # Check if there are images left in the list
+            image = self.images.pop(0)  # Get the first image path and remove it from the list
+            barcode = self.decode_and_fetch_product(image)
+            return barcode
+ 
+    def on_barcode_button_pressed(self):
+        barcode = self.barcodes()
+        self.update_purchase(barcode)
+
+    def update_purchase(self,barcode):
+        if barcode:
+            pcode = barcode
+            self.ids.productcode.text = str(barcode)
+            pcode = self.ids.productcode.text
         pcode = self.ids.productcode.text
+
         products_container = self.ids.products
         last_record = self.db.Purchase_Records.find_one(sort=[('receipt_number', -1)])  
         receipt = last_record['receipt_number']
         product_quantity = 0
         reciept_number = int(receipt[1:]) + 1
 
-        #Verifying product code entered exists in our database
         target_code = self.stocks.find_one({'product_code': pcode})
         if target_code is None:
             self.notify.add_widget(Label(text='[color=#FFFFFF][b]Product not found![/b][/color]', markup=True))
@@ -100,9 +178,10 @@ class Operation_Window(BoxLayout):
             products_container.add_widget(details)
         
             product_price = float(target_code.get('product_price', 0))
-           
+    
             Quantity = self.ids.quantity.text
-            pcode = self.ids.productcode.text
+            
+
             if Quantity == '' :
                 Quantity = 1
             else:
@@ -182,20 +261,37 @@ class Operation_Window(BoxLayout):
             else:
                 self.cart.append(pcode)
                 self.quantity.append(Quantity)
-
+            
                 # Construct a new line for the product in the receipt text
                 new_text = ''.join([previous , pro_name + ':  \t\t\t\t\tx' + str(Quantity) + '\t\t\t\t\t' + str(pro_price),'\t\t\t ',str(Total), purchase_Total])
                 # Update the receipt text with the new line
                 preview.text = new_text
 
             self.ids.discount.text = '0.00'
-            self.ids.quantity.text = ''
+            self.ids.quantity.text = str(Quantity)
             self.ids.price.text = str(pro_price)
             self.ids.vat.text = '15%'
             self.ids.total.text = str(total_price)
-            
+            self.ids.productcode.text = ''
+    
+
+    def reset_order(self):
+        # Reset order details
+        self.ids.product.text = ''
+        self.ids.cur_price.text = '0.00'
+        self.ids.reciept_preview.text = 'Super Serve \n123 Banafseg \nThe 5th Settlement Space\nTel:(20)10-2928-4678 \nDate: 4/16/2024 \n\n'
+        self.ids.discount.text = '0.00'
+        self.ids.quantity.text = ''
+        self.ids.price.text = '0.00'
+        self.ids.vat.text = '15%'
+        self.ids.total.text = '0.00'
+        # Clear product details from the layout
+        self.ids.products.clear_widgets()
+
+
     def update_database(self):
         # Deduct and update products in the database
+        self.Connection = self.is_connection_established()
         for item, quantity in zip(self.cart, self.quantity):
             target_code = self.stocks.find_one({'product_code': item})
             if target_code:
@@ -207,13 +303,6 @@ class Operation_Window(BoxLayout):
                 current_sold += quantity
 
                 # Update the quantity in the database
-                self.stocks.update_one({'product_code': item}, {'$set': {'in_stock': new_quantity}})
-                self.stocks.update_one({'product_code': item}, {'$set': {'sold': current_sold}})
-                self.stocks.update_one({'product_code': item}, {'$set': {'last_purchase': purchase_date}})
-
-
-                self.Update_online_database(item, new_quantity, "stocks", 'in_stock')
-                self.Update_online_database(item, current_sold, "stocks", 'sold')
 
                 # Insert a new record for the transaction
                 receipt_number = self.generate_receipt_number()  # Generate a new receipt number
@@ -223,14 +312,20 @@ class Operation_Window(BoxLayout):
                 purchase_record = {
                     'receipt_number': receipt_number,
                     'total': total_amount,
-                    'date': purchase_date,
+                    'last_purchase': purchase_date,
                     'items_purchased': items_purchased
                 }
-
-                # Insert the record into the database
-                self.Update_online_database(item,purchase_date,"last_purchase","stocks")
+                self.reset_order()
+                self.stocks.update_one({'product_code': item}, {'$set': {'in_stock': new_quantity}})
+                self.stocks.update_one({'product_code': item}, {'$set': {'sold': current_sold}})
                 self.db.Purchase_Records.insert_one(purchase_record)
-                self.sync_to_online_database(purchase_record,"Purchase_Records")
+                # Online
+                self.sync_to_online_database(item,'in_stock')
+                self.sync_to_online_database(item,'sold')
+                self.online_purchase_records(purchase_record,"Purchase_Records")
+
+
+
             # After deduction, clear the cart and quantity list
             self.cart.clear()
             self.quantity.clear()
@@ -251,18 +346,7 @@ class Operation_Window(BoxLayout):
 
         return new_receipt_number
     
-    def reset_order(self):
-        # Reset order details
-        self.ids.product.text = 'Default Product'
-        self.ids.cur_price.text = '0.00'
-        self.ids.reciept_preview.text = 'Super Serve \n123 Banafseg \nThe 5th Settlement Space\nTel:(20)10-2928-4678 \nDate: 4/16/2024 \n\n'
-        self.ids.discount.text = '0.00'
-        self.ids.quantity.text = '0'
-        self.ids.price.text = '0.00'
-        self.ids.vat.text = '15%'
-        self.ids.total.text = '0.00'
-        # Clear product details from the layout
-        self.ids.products.clear_widgets()
+
 
 class OperatorApp(App):
     def build(self):
