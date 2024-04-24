@@ -11,8 +11,7 @@ from datetime import datetime
 import requests
 import cv2
 from pyzbar.pyzbar import decode
-from kivy.animation import Animation
-from kivy.properties import ObjectProperty
+
 
 # Builder.load_file('Operator/Operator.kv')
 
@@ -179,18 +178,18 @@ class Operation_Window(BoxLayout):
         
             product_price = float(target_code.get('product_price', 0))
     
-            Quantity = self.ids.quantity.text
+            Total_Quantity = self.ids.quantity.text
             
 
-            if Quantity == '' :
-                Quantity = 1
+            if Total_Quantity == '' :
+                Total_Quantity = 1
             else:
-                Quantity = int(Quantity)
-            total_price = Quantity * product_price * 1.15  
+                Total_Quantity = int(Total_Quantity)
+            total_price = Total_Quantity * product_price * 1.15  
 
             code = Label(text=pcode, size_hint_y=.7, size_hint_x=.1, color=get_color_from_hex('#111212'))
             name = Label(text=target_code['product_name'] , size_hint_y=.7, size_hint_x=.3, color=get_color_from_hex('#111212'))
-            quantity = Label(text=str(Quantity), size_hint_y=.7, size_hint_x=.1, color=get_color_from_hex('#111212'))
+            quantity = Label(text=str(Total_Quantity), size_hint_y=.7, size_hint_x=.1, color=get_color_from_hex('#111212'))
             discount = Label(text='0.00%', size_hint_y=.7, size_hint_x=.1, color=get_color_from_hex('#111212'))
             price = Label(text=str(target_code['product_price']), size_hint_y=0.7, size_hint_x=0.1, color=get_color_from_hex('#111212'))
             vat = Label(text='15%', size_hint=(0.1, 0.7), color=get_color_from_hex('#111212'))
@@ -212,19 +211,29 @@ class Operation_Window(BoxLayout):
 
                 
             product_quantity += int(quantity.text) 
-                    
+
             Total = pro_price * product_quantity 
             
-            self.total += pro_price * Quantity
+            self.total += pro_price * Total_Quantity
             self.total = round(self.total,2) 
-            
+
+            Discount = self.total * .02
+            Discount = round(Discount,2)
             vat = self.total * .15
             vat = round(vat,2)
             
-            self.post_tax =  self.total* 1.15
+            self.post_tax =  (self.total* 1.15) - Discount
             self.post_tax = round(self.post_tax,2)
             
-            purchase_Total = '\n\nSubTotal:\t\t\t\t\t\t\t\t\t\t\t\t\t\t ' + str(self.total) +'\nVat:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'+ str(vat)+'\nTotal:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t '+ str(self.post_tax) + '\n\t' 
+            purchase_Total = (
+                '\n\nSubTotal:\t\t\t\t\t\t\t\t\t\t\t\t\t\t{:10}'.format(self.total)
+                + '\nDiscount:\t\t\t\t\t\t\t\t\t\t\t\t\t\t-{:10}'.format(Discount)
+                + '\nVat:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{:10}'.format(vat)
+                + '\nTotal:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t{:10}'.format(self.post_tax)
+                + '\n\t'
+            )
+
+
             self.ids.product.text = pro_name
             self.ids.cur_price.text = str(pro_price)
 
@@ -246,7 +255,7 @@ class Operation_Window(BoxLayout):
                     
             if found_product:
 
-                self.quantity[i] += Quantity
+                self.quantity[i] += Total_Quantity
                 product_quantity = self.quantity[i]
                 Total = pro_price * product_quantity
                 Total = round(Total,2)
@@ -260,15 +269,15 @@ class Operation_Window(BoxLayout):
                 #new line
             else:
                 self.cart.append(pcode)
-                self.quantity.append(Quantity)
+                self.quantity.append(Total_Quantity)
             
                 # Construct a new line for the product in the receipt text
-                new_text = ''.join([previous , pro_name + ':  \t\t\t\t\tx' + str(Quantity) + '\t\t\t\t\t' + str(pro_price),'\t\t\t ',str(Total), purchase_Total])
+                new_text = ''.join([previous , pro_name + ':  \t\t\tx' + str(Total_Quantity) + '\t\t\t\t\t' + str(pro_price),'\t\t\t ',str(Total), purchase_Total])
                 # Update the receipt text with the new line
-                preview.text = new_text
+                preview.text = new_text 
 
             self.ids.discount.text = '0.00'
-            self.ids.quantity.text = str(Quantity)
+            self.ids.quantity.text = str(Total_Quantity)
             self.ids.price.text = str(pro_price)
             self.ids.vat.text = '15%'
             self.ids.total.text = str(total_price)
