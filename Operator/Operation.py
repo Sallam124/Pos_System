@@ -119,12 +119,24 @@ class Operation_Window(BoxLayout):
     def sync_to_online_database(self, product_code, column_name):
 
         if self.Connect():
+            # Retrieve the existing document from online_stocks
+            existing_record = self.online_stocks.find_one({"product_code": product_code})
+
+            # Retrieve the value to update from the "stocks" collection
             record = self.stocks.find_one({"product_code": product_code})
             in_stock_value = record.get(column_name)
 
-            filter_query = {"product_code": product_code}
-            update_query = {column_name: in_stock_value}  # Remove $set operator
-            self.online_stocks.replace_one(filter_query, update_query, upsert=True)
+            # Update only the specified field in the existing document
+            if existing_record:
+                existing_record[column_name] = in_stock_value
+                filter_query = {"product_code": product_code}
+                # Use the existing document as the update query
+                self.online_stocks.replace_one(filter_query, existing_record)
+            else:
+                # If the document doesn't exist, create a new one
+                update_query = {"product_code": product_code, column_name: in_stock_value}
+                self.online_stocks.insert_one(update_query)
+
             print("Synchronization Successful")
         else:
             print("Failed to sync local changes to online database:")
