@@ -13,7 +13,7 @@ import cv2
 from pyzbar.pyzbar import decode
 
 
-# Builder.load_file('Operator/Operator.kv')
+Builder.load_file('Operator/Operator.kv')
 
 class notify(ModalView):
     def __init__(self, **kwargs):
@@ -103,11 +103,10 @@ class Operation_Window(BoxLayout):
     def online_purchase_records(self,Record,column_name): # insert
 
         if self.Connect():
-
             online_collection = self.online_db[column_name]
             online_collection.insert_one(Record)
-                    
             print("Synchronization Successful")
+
         else:
             self.pending_records.append({'Record': Record, 'column_name': column_name})
             print("Data Appended, Will Sync After 30 minutes")
@@ -127,6 +126,7 @@ class Operation_Window(BoxLayout):
             in_stock_value = record.get(column_name)
 
             # Update only the specified field in the existing document
+
             if existing_record:
                 existing_record[column_name] = in_stock_value
                 filter_query = {"product_code": product_code}
