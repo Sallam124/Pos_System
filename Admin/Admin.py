@@ -457,9 +457,9 @@ class AdminWindow(BoxLayout):
             self.ids.scrn_mngr.current = 'scrn_analysis'
 
 
-# class AdminApp(App):
-#     def build(self):
-#         return AdminWindow()
+class AdminApp(App):
+    def build(self):
+        return AdminWindow()
 
-# if __name__=='__main__':
-#     AdminApp().run()
+if __name__=='__main__':
+    AdminApp().run()
