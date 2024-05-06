@@ -163,6 +163,8 @@ class Operation_Window(BoxLayout):
         barcode = self.barcodes()
         self.update_purchase(barcode)
 
+
+
     def update_purchase(self,barcode):
         
         if barcode:
