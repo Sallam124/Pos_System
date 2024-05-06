@@ -24,7 +24,6 @@ class Operation_Window(BoxLayout):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
 
-
         self.images = [
             "C:/Users/salla/OneDrive/Desktop/Integrative Project/Integrative-Project/Barcodes/barcode_3.png.png",
             "C:/Users/salla/OneDrive/Desktop/Integrative Project/Integrative-Project/Barcodes/barcode_4.png.png",
@@ -64,7 +63,6 @@ class Operation_Window(BoxLayout):
     def decode_and_fetch_product(self, image_path=None):
         # If no image path is provided, return None
         if image_path is None:
-            print('sallam')
             return None
             # Decode barcodes in the image
         barcodes = self.decode_barcodes(image_path) 
@@ -166,10 +164,12 @@ class Operation_Window(BoxLayout):
         self.update_purchase(barcode)
 
     def update_purchase(self,barcode):
+        
         if barcode:
             pcode = barcode
             self.ids.productcode.text = str(barcode)
             pcode = self.ids.productcode.text
+
         pcode = self.ids.productcode.text
 
         products_container = self.ids.products
