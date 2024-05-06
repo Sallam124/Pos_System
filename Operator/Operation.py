@@ -45,10 +45,16 @@ class Operation_Window(BoxLayout):
         self.pending_records = [] 
         self.pending_updates = [] 
 
+        self.Connection = self.is_connection_established()
+        
+        if not self.Connection:
+            Clock.schedule_once(self.retry_connection, 1800)  # Schedule retry after 30 minutes
 
-        Clock.schedule_interval(self.is_connection_established, 1800)
-
-
+    def retry_connection(self, dt):
+        self.Connection = self.is_connection_established()
+        if not self.Connection:
+            print("Connection failed. Retrying again in 30 minutes.")
+            Clock.schedule_once(self.retry_connection, 1800) 
 
     def decode_barcodes(self, image_path=None):
         # If no image path is provided, return an empty list
@@ -79,42 +85,52 @@ class Operation_Window(BoxLayout):
         self.notify.dismiss()
         self.notify.clear_widgets()
     
+
+
     def is_connection_established(self):
         try:
             requests.get("http://www.google.com", timeout=5)  # Increase timeout to 10 seconds
             print("Connection Established")
+            
             return True
         except requests.ConnectionError:
             print("Connection Failed")
             return False
-        
+
+
     def Connect(self):
         if self.Connection:
             online_client= MongoClient("mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/")
             self.online_db = online_client.Pos
             self.online_stocks = self.online_db.stocks
             return True
-        else:
-            return False
-            
+        return False
 
-    def online_purchase_records(self,Record,column_name): # insert
-
+    def online_purchase_records(self, Record, column_name):
         if self.Connect():
             online_collection = self.online_db[column_name]
             online_collection.insert_one(Record)
             print("Synchronization Successful")
-
         else:
             self.pending_records.append({'Record': Record, 'column_name': column_name})
             print("Data Appended, Will Sync After 30 minutes")
             print(self.pending_records)
-            Clock.schedule_once(self.sync_pending_records,1800)
+            Clock.schedule_once(self.sync_pending_records, 1800)
 
+
+    def sync_pending_records(self, dt):
+        if self.Connect():
+            for record in self.pending_records:
+                online_collection = self.online_db[record['column_name']]
+                online_collection.insert_one(record['Record'])
+            print("Pending records synchronized successfully.")
+            self.pending_records = []  # Clear pending records after sync
+        else:
+            print("Still no connection. Retrying again in 30 minutes.")
+            Clock.schedule_once(self.sync_pending_records, 1800)
 
 
     def sync_to_online_database(self, product_code, column_name):
-
         if self.Connect():
             # Retrieve the existing document from online_stocks
             existing_record = self.online_stocks.find_one({"product_code": product_code})
@@ -124,7 +140,6 @@ class Operation_Window(BoxLayout):
             in_stock_value = record.get(column_name)
 
             # Update only the specified field in the existing document
-
             if existing_record:
                 existing_record[column_name] = in_stock_value
                 filter_query = {"product_code": product_code}
@@ -137,20 +152,13 @@ class Operation_Window(BoxLayout):
 
             print("Synchronization Successful")
         else:
-            print("Failed to sync local changes to online database:")
-            print("Data Will be Updated After 30 Minutes")
-
+            print("Failed to sync local changes to online database in column:", column_name)
+            # Schedule retry without printing connection failed
             Clock.schedule_once(lambda dt: self.sync_to_online_database(product_code, column_name), 1800)
 
 
     
-    def sync_pending_records(self):
-        if self.is_connection_established():
-            for record in self.pending_records:
-                self.online_purchase_records(record["purchase_Record"], record["Purhcase_Records"])
-            self.pending_records.clear()  # Remove the comma here
 
-    
     def barcodes(self):
         barcode = None
         # Initialize barcode variable
@@ -314,7 +322,6 @@ class Operation_Window(BoxLayout):
 
     def update_database(self):
         # Deduct and update products in the database
-        self.Connection = self.is_connection_established()
         for item, quantity in zip(self.cart, self.quantity):
             target_code = self.stocks.find_one({'product_code': item})
             if target_code:
