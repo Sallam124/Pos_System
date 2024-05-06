@@ -34,6 +34,13 @@ class AdminWindow(BoxLayout):
         self.db = client_local.Pos    
         self.products = self.db.stocks
         self.Purchase_Records = self.db.Purchase_Records
+        
+        self.client_online = MongoClient("mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/")
+        self.online_db = self.client_online.Pos
+        self.online_products = self.online_db.stocks
+        self.online_purchase_records = self.online_db.Purchase_Records
+        
+
 
         self.notify = Notify()  # Notification modal instance
 
@@ -99,7 +106,9 @@ class AdminWindow(BoxLayout):
             # Insert new user data into the database
             self.users.insert_one({'first_name':first,'last_name':last,
         'user_name':user,'password':pwd,'designation':des,'date':datetime.now()})
+            
             content = self.ids.scrn_contents
+
             content.clear_widgets()
 
             # Update user table
@@ -145,6 +154,7 @@ class AdminWindow(BoxLayout):
         else:
             # Insert new product data into the database
             self.products.insert_one({'product_code':code,'product_name':name,'product_weight':weight,'in_stock':stock,'sold':sold,'product_price':price,'last_purchase':purchase})
+            self.online_products.insert_one({'product_code':code,'product_name':name,'product_weight':weight,'in_stock':stock,'sold':sold,'product_price':price,'last_purchase':purchase})
             content = self.ids.scrn_product_contents
             content.clear_widgets()
 
@@ -258,7 +268,7 @@ class AdminWindow(BoxLayout):
                 content.clear_widgets()
                 
                 self.products.update_one({'product_code': code}, {'$set': {'product_code': code, 'product_name': name, 'product_weight': weight, 'in_stock': stock, 'sold': sold, 'product_price': price, 'last_purchase': purchase}})
-            
+                self.online_products.update_one({'product_code': code}, {'$set': {'product_code': code, 'product_name': name, 'product_weight': weight, 'in_stock': stock, 'sold': sold, 'product_price': price, 'last_purchase': purchase}})
                 prodz = self.get_products()
                 stocktable = DataTable(table=prodz)
                 content.add_widget(stocktable)
@@ -332,97 +342,148 @@ class AdminWindow(BoxLayout):
 
                 # Remove product from the database
                 self.products.delete_one({'product_code':code})
-
+                self.online_products.delete_one({'product_code':code})
                 # Update product table
                 prodz = self.get_products()
                 stocktable = DataTable(table=prodz)
                 content.add_widget(stocktable)
 
     # Method to fetch users data from the database
-    def get_users(self):
-        client = MongoClient()
-        db = client.Pos
-        users = db.users
-        _users = OrderedDict()
-        _users['first_names'] = {}
-        _users['last_names'] = {}
-        _users['user_names'] = {}
-        _users['passwords'] = {}
-        _users['designations'] = {}
-        first_names = []
-        last_names = []
-        user_names = []
-        passwords = []
-        designations = []
-        for user in users.find():
-            first_names.append(user['first_name'])
-            last_names.append(user['last_name'])
-            user_names.append(user['user_name'])
-            pwd = user['password']
-            if len(pwd) > 10:
-                pwd = pwd[:10] + '...'
-            passwords.append(pwd)
-            designations.append(user['designation'])
-        users_length = len(first_names)
-        idx = 0
-        while idx < users_length:
-            _users['first_names'][idx] = first_names[idx]
-            _users['last_names'][idx] = last_names[idx]
-            _users['user_names'][idx] = user_names[idx]
-            _users['passwords'][idx] = passwords[idx]
-            _users['designations'][idx] = designations[idx]
+    def get_users():
+        # Offline database connection
+        offline_client = MongoClient()
+        offline_db = offline_client.Pos
+        offline_users = offline_db.users
 
-            idx += 1
-        
+        # Online database connection
+        online_client = MongoClient("mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/")
+        online_db = online_client.Pos
+        online_users = online_db.users
+
+        _users = OrderedDict()
+
+        # Initialize dictionaries for offline and online users
+        _users['offline'] = OrderedDict()
+        _users['online'] = OrderedDict()
+
+        # Function to append user data into a dictionary
+        def append_user_data(user_data, user_dict):
+            for idx, user in enumerate(user_data):
+                user_dict['first_names'][idx] = user['first_name']
+                user_dict['last_names'][idx] = user['last_name']
+                user_dict['user_names'][idx] = user['user_name']
+                pwd = user['password']
+                if len(pwd) > 10:
+                    pwd = pwd[:10] + '...'
+                user_dict['passwords'][idx] = pwd
+                user_dict['designations'][idx] = user['designation']
+
+        # Offline users data retrieval
+        offline_user_data = list(offline_users.find())
+        offline_users_length = len(offline_user_data)
+        offline_user_dict = {
+            'first_names': {},
+            'last_names': {},
+            'user_names': {},
+            'passwords': {},
+            'designations': {}
+        }
+        append_user_data(offline_user_data, offline_user_dict)
+
+        # Online users data retrieval
+        online_user_data = list(online_users.find())
+        online_users_length = len(online_user_data)
+        online_user_dict = {
+            'first_names': {},
+            'last_names': {},
+            'user_names': {},
+            'passwords': {},
+            'designations': {}
+        }
+        append_user_data(online_user_data, online_user_dict)
+
+        # Append offline and online user data into _users dictionary
+        _users['offline'] = offline_user_dict
+        _users['online'] = online_user_dict
+
         return _users
 
+    # Example usage
+    users_data = get_users()
+    print(users_data)
+    
+
     # Method to fetch products data from the database
-    def get_products(self):
-        client = MongoClient()
-        db = client.Pos
-        products = db.stocks
+
+    def get_products():
+        # Offline database connection
+        offline_client = MongoClient()
+        offline_db = offline_client.Pos
+        offline_products = offline_db.stocks
+
+        # Online database connection
+        online_client = MongoClient("mongodb+srv://sallamaym:BUY64iMKxpFcjp89@integrative.ic3wvml.mongodb.net/")
+        online_db = online_client.Pos
+        online_products = online_db.stocks
+
         _stocks = OrderedDict()
-        _stocks['product_code'] = {}
-        _stocks['product_name'] = {}
-        _stocks['product_weight'] = {}
-        _stocks['in_stock'] = {}
-        _stocks['sold'] = {}
-        _stocks['product_price'] = {}
-        _stocks['last_purchase'] = {}
 
-        product_code = []
-        product_name = []
-        product_weight = []
-        in_stock = []
-        sold = []
-        product_price = []
-        last_purchase = []
+        # Initialize dictionaries for offline and online products
+        _stocks['offline'] = OrderedDict()
+        _stocks['online'] = OrderedDict()
 
-        for product in products.find():
-            product_code.append(product['product_code'])
-            name = product['product_name']
-            if len(name) > 10:
-                name = name[:10] + '...'
-            product_name.append(name)
-            product_weight.append(product['product_weight'])
-            in_stock.append(product['in_stock'])
-            sold.append(product['sold'])
-            product_price.append(product['product_price'])
-            last_purchase.append(product['last_purchase'])
-        stock_length = len(product_code)
-        idx = 0
-        while idx < stock_length:
-            _stocks['product_code'][idx] = product_code[idx]
-            _stocks['product_name'][idx] = product_name[idx]
-            _stocks['product_weight'][idx] = product_weight[idx]
-            _stocks['in_stock'][idx] = in_stock[idx]
-            _stocks['sold'][idx] = sold[idx]
-            _stocks['product_price'][idx] = product_price[idx]
-            _stocks['last_purchase'][idx] = last_purchase[idx]
+        # Function to append product data into a dictionary
+        def append_product_data(product_data, product_dict):
+            for idx, product in enumerate(product_data):
+                product_dict['product_code'][idx] = product['product_code']
+                name = product['product_name']
+                if len(name) > 10:
+                    name = name[:10] + '...'
+                product_dict['product_name'][idx] = name
+                product_dict['product_weight'][idx] = product['product_weight']
+                product_dict['in_stock'][idx] = product['in_stock']
+                product_dict['sold'][idx] = product['sold']
+                product_dict['product_price'][idx] = product['product_price']
+                product_dict['last_purchase'][idx] = product['last_purchase']
 
-            idx += 1
+        # Offline products data retrieval
+        offline_product_data = list(offline_products.find())
+        offline_products_length = len(offline_product_data)
+        offline_product_dict = {
+            'product_code': {},
+            'product_name': {},
+            'product_weight': {},
+            'in_stock': {},
+            'sold': {},
+            'product_price': {},
+            'last_purchase': {}
+        }
+        append_product_data(offline_product_data, offline_product_dict)
+
+        # Online products data retrieval
+        online_product_data = list(online_products.find())
+        online_products_length = len(online_product_data)
+        online_product_dict = {
+            'product_code': {},
+            'product_name': {},
+            'product_weight': {},
+            'in_stock': {},
+            'sold': {},
+            'product_price': {},
+            'last_purchase': {}
+        }
+        append_product_data(online_product_data, online_product_dict)
+
+        # Append offline and online product data into _stocks dictionary
+        _stocks['offline'] = offline_product_dict
+        _stocks['online'] = online_product_dict
 
         return _stocks
+
+    # Example usage
+    products_data = get_products()
+    print(products_data)
+
 
 
     def view_stats(self):
