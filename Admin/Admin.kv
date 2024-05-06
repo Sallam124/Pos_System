@@ -29,25 +29,21 @@
             on_release: file_dropdown.open(self)
             size_hint: (.1,None)
             height: 30
+            DropDown:
+                id: file_dropdown
+                Button:
+                    id: close_logout
+                    text: 'logout'
+                    size_hint_y: None
+                    height: 30
+                    on_release: root.logout(); file_dropdown.dismiss()  
+                Button:
+                    id: close_quit
+                    text: 'quit'
+                    size_hint_y: None
+                    height: 30
+                    on_release: Window.close(); file_dropdown.dismiss() 
 
-            Widget:
-                on_parent: file_dropdown.dismiss()
-            
-                DropDown:
-                    id: file_dropdown
-                    
-                    Button:
-                        id: close
-                        text: 'logout'
-                        size_hint_y: None
-                        height: 30
-                        on_release: root.logout()
-                    Button:
-                        id: close
-                        text: 'quit'
-                        size_hint_y: None
-                        height: 30
-                        on_release: Window.close()
 
         Label:
             text: 'Admin Dashboard'
