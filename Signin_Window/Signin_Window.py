@@ -63,10 +63,10 @@ class Signin_Window(BoxLayout):
 
         
 
-# class Signin_app(App): # use imported (App) to start the program
-#     def build(self):
-#         return Signin_Window() 
+class Signin_app(App): # use imported (App) to start the program
+    def build(self):
+        return Signin_Window() 
 
-# if __name__ == "__main__":
-#     start = Signin_app()  
-#     start.run() 
+if __name__ == "__main__":
+    start = Signin_app()  
+    start.run() 
