@@ -1,16 +1,29 @@
 import subprocess
+
 from kivy.logger import Logger  
+
 Logger.debug("Debug message")
+
 Logger.info("Info message")
+
 Logger.warning("Warning message")
+
 Logger.error("Error message")
+
 from kivy.app import App
+
 from kivy.uix.boxlayout import BoxLayout
+
 from kivy.lang import Builder
+
 from pymongo import MongoClient
+
 import hashlib
+
 import time
+
 from datetime import datetime
+
 Builder.load_file('Signin_Window/Signin_app.kv')
 
 class Signin_Window(BoxLayout):
