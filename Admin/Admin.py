@@ -9,14 +9,14 @@ from kivy.uix.modalview import ModalView
 from kivy.lang import Builder
 from collections import OrderedDict
 from pymongo import MongoClient
-from Admin.Utilities.data import DataTable
+from Utilities.data import DataTable
 from datetime import datetime
 import hashlib
 import pandas as pd
 import matplotlib.pyplot as plt
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg as mtp
 
-Builder.load_file('Admin/Admin.kv')  # Load Kivy language file
+# Builder.load_file('Admin/Admin.kv')  # Load Kivy language file
 
 # Custom modal view for notifications
 class Notify(ModalView):
@@ -424,13 +424,12 @@ class AdminWindow(BoxLayout):
 
         return _stocks
 
-
     def view_stats(self):
         plt.cla()
         self.ids.analysis_res.clear_widgets()
         target_product = self.ids.target_product.text
         target = target_product[:target_product.find(' | ')]
-        name = target_product[target_product.find(' | '):] 
+        name = target_product[target_product.find(' | '):]       
 
         df = pd.read_csv("C:\\Users\\salla\\OneDrive\\Desktop\\Integrative Project\\Integrative-Project\\Admin\\products_purchase.csv")
         purchases = []
@@ -446,7 +445,6 @@ class AdminWindow(BoxLayout):
         plt.xlabel('day')
 
         self.ids.analysis_res.add_widget(mtp(plt.gcf()))
-
 
     def change_screen(self, instance):
         if instance.text == 'Manage Products':
