@@ -7,10 +7,9 @@ from kivy.uix.spinner import Spinner
 from kivy.clock import Clock
 from kivy.uix.modalview import ModalView
 from kivy.lang import Builder
-
 from collections import OrderedDict
 from pymongo import MongoClient
-from Utilities.data import DataTable
+from Admin.Utilities.data import DataTable
 from datetime import datetime
 import hashlib
 import pandas as pd
@@ -87,16 +86,16 @@ class AdminWindow(BoxLayout):
         crud_weight = TextInput(hint_text='Product Weight',multiline=False)
         crud_stock = TextInput(hint_text='Product In Stock',multiline=False)
         crud_sold = TextInput(hint_text='Products Sold',multiline=False)
-        crud_order = TextInput(hint_text='Ordered',multiline=False)
+        crud_barcode_number = TextInput(hint_text='Barcode_number',multiline=False)
         crud_purchase = TextInput(hint_text='Last Purchase',multiline=False)
-        crud_submit = Button(text='Add',size_hint_x=None,width=100,on_release=lambda x: self.add_product(crud_code.text,crud_name.text,crud_weight.text,crud_stock.text,crud_sold.text,crud_order.text,crud_purchase.text))
+        crud_submit = Button(text='Add',size_hint_x=None,width=100,on_release=lambda x: self.add_product(crud_code.text,crud_name.text,crud_weight.text,crud_stock.text,crud_sold.text,crud_barcode_number.text,crud_purchase.text))
 
         target.add_widget(crud_code)
         target.add_widget(crud_name)
         target.add_widget(crud_weight)
         target.add_widget(crud_stock)
         target.add_widget(crud_sold)
-        target.add_widget(crud_order)
+        target.add_widget(crud_barcode_number)
         target.add_widget(crud_purchase)
         target.add_widget(crud_submit)
         
@@ -121,14 +120,14 @@ class AdminWindow(BoxLayout):
         self.notify.dismiss()
         self.notify.clear_widgets()
 
-    def add_product(self,code,name,weight,stock,sold,order,purchase):
+    def add_product(self,code,name,weight,stock,sold,barcode_number,purchase):
         
-        if code == '' or name == '' or weight == '' or stock == '' or order == '': 
+        if code == '' or name == '' or weight == '' or stock == '' or barcode_number == '': 
             self.notify.add_widget(Label(text='[color=#FF0000][b]All Fields Required[/b][/color]',markup=True))
             self.notify.open()
             Clock.schedule_once(self.killswitch,1)
         else:
-            self.products.insert_one({'product_code':code,'product_name':name,'product_weight':weight,'in_stock':stock,'sold':sold,'order':order,'last_purchase':purchase})
+            self.products.insert_one({'product_code':code,'product_name':name,'product_weight':weight,'in_stock':stock,'sold':sold,'barcode_number':barcode_number,'last_purchase':purchase})
             content = self.ids.scrn_product_contents
             content.clear_widgets()
 
@@ -162,16 +161,16 @@ class AdminWindow(BoxLayout):
         crud_weight = TextInput(hint_text='Product Weight',multiline=False)
         crud_stock = TextInput(hint_text='Product In Stock',multiline=False)
         crud_sold = TextInput(hint_text='Products Sold',multiline=False)
-        crud_order = TextInput(hint_text='Ordered',multiline=False)
+        crud_barcode_number = TextInput(hint_text='Barcode_number',multiline=False)
         crud_purchase = TextInput(hint_text='Last Purchase',multiline=False)
-        crud_submit = Button(text='Update',size_hint_x=None,width=100,on_release=lambda x: self.update_product(crud_code.text,crud_name.text,crud_weight.text,crud_stock.text,crud_sold.text,crud_order.text,crud_purchase.text))
+        crud_submit = Button(text='Update',size_hint_x=None,width=100,on_release=lambda x: self.update_product(crud_code.text,crud_name.text,crud_weight.text,crud_stock.text,crud_sold.text,crud_barcode_number.text,crud_purchase.text))
 
         target.add_widget(crud_code)
         target.add_widget(crud_name)
         target.add_widget(crud_weight)
         target.add_widget(crud_stock)
         target.add_widget(crud_sold)
-        target.add_widget(crud_order)
+        target.add_widget(crud_barcode_number)
         target.add_widget(crud_purchase)
         target.add_widget(crud_submit)
     
@@ -204,7 +203,7 @@ class AdminWindow(BoxLayout):
                 userstable = DataTable(table=users)
                 content.add_widget(userstable)
     
-    def update_product(self,code,name,weight,stock,sold,order,purchase):
+    def update_product(self,code,name,weight,stock,sold,barcode_number,purchase):
 
         if code == '':
             self.notify.add_widget(Label(text='[color=#FF0000][b]Code required[/b][/color]',markup=True))
@@ -225,14 +224,14 @@ class AdminWindow(BoxLayout):
                     stock = target_code['in_stock']
                 if sold == '':
                     sold = target_code['sold']
-                if order == '':
-                    order = target_code['order']
+                if barcode_number == '':
+                    barcode_number = target_code['barcode_number']
                 if purchase == '':
                     purchase = target_code['last_purchase']
                 content = self.ids.scrn_product_contents
                 content.clear_widgets()
                     
-                self.products.update_one({'product_code':code},{'$set':{'product_code':code,'product_name':name,'product_weight':weight,'in_stock':stock,'sold':sold,'order':order,'last_purchase':purchase}})
+                self.products.update_one({'product_code':code},{'$set':{'product_code':code,'product_name':name,'product_weight':weight,'in_stock':stock,'sold':sold,'barcode_number':barcode_number,'last_purchase':purchase}})
     
                 prodz = self.get_products()
                 stocktable = DataTable(table=prodz)
@@ -347,7 +346,7 @@ class AdminWindow(BoxLayout):
         _stocks['product_weight'] = {}
         _stocks['in_stock'] = {}
         _stocks['sold'] = {}
-        _stocks['order'] = {}
+        _stocks['barcode_number'] = {}
         _stocks['last_purchase'] = {}
 
         product_code = []
@@ -355,7 +354,7 @@ class AdminWindow(BoxLayout):
         product_weight = []
         in_stock = []
         sold = []
-        order = []
+        barcode_number = []
         last_purchase = []
 
         for product in products.find():
@@ -371,9 +370,9 @@ class AdminWindow(BoxLayout):
             except KeyError:
                 sold.append('')
             try:
-                order.append(product['order'])
+                barcode_number.append(product['barcode_number'])
             except KeyError:
-                order.append('')
+                barcode_number.append('')
             try:
                 last_purchase.append(product['last_purchase'])
             except KeyError:
@@ -387,7 +386,7 @@ class AdminWindow(BoxLayout):
             _stocks['product_weight'][idx] = product_weight[idx]
             _stocks['in_stock'][idx] = in_stock[idx]
             _stocks['sold'][idx] = sold[idx]
-            _stocks['order'][idx] = order[idx]
+            _stocks['barcode_number'][idx] = barcode_number[idx]
             _stocks['last_purchase'][idx] = last_purchase[idx]
            
 
