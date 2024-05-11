@@ -6,15 +6,19 @@ from kivy.uix.label import Label
 from kivy.uix.spinner import Spinner
 from kivy.clock import Clock
 from kivy.uix.modalview import ModalView
+from kivy.lang import Builder
 
 from collections import OrderedDict
 from pymongo import MongoClient
-from Admin.Utilities.data import DataTable
+from Utilities.data import DataTable
 from datetime import datetime
 import hashlib
 import pandas as pd
+
 import matplotlib.pyplot as plt
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg as MTP
+
+Builder.load_file('Admin/Admin.kv')
 
 class Notify(ModalView):
     def __init__(self, **kwargs):
